@@ -93,3 +93,4 @@
 /ShowNews.aspx
 /Web_Site/Search.aspx
 /AjaxHandler/UploadHandler.ashx
+/rdweb/pages/zh-cn/password.aspx

@@ -1,9 +1,0 @@
-admin
-enrol
-surveillance
-enquiry
-record
-verification
-users
-config
-report

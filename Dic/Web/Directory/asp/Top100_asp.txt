@@ -84,3 +84,4 @@
 /view.asp
 /view_n.asp
 /viewnews.asp
+/kindeditor/asp.net/demo.aspx

@@ -7,7 +7,6 @@
 /address_api.js
 /ad.js
 /admin.js
-/ajaxfileupload/ajaxfileupload.js
 /ajaxfileupload.js
 /Ajax.js
 /a.js
@@ -44,6 +43,7 @@
 /combox.js
 /Command.js
 /common.js
+/config/index.js
 /config.js
 /configs.js
 /configure.js
@@ -264,4 +264,3 @@
 /xls.js
 /zh-cn.js
 /zyupload.js
-/config/index.js

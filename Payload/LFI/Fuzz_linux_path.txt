@@ -1,0 +1,6 @@
+/tmp/
+/httpd/
+/www/
+/www/html/
+/www/html/php/
+/../../../../../../../../../../../../proc/self/cwd/../webapps/

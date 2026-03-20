@@ -5,6 +5,7 @@ password
 Abcd1234
 admin
 12345
+builder
 1234
 p@ssw0rd
 123
@@ -100,3 +101,7 @@ centos
 54321
 password123
 TopHCS@6666
+Admin@9000
+posswOrd
+TestEcs123!
+Password@_

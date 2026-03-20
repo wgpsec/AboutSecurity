@@ -1,0 +1,66 @@
+User-agent: Fuzz Faster U Fool
+User-Agent: Hello, world
+User-Agent: Scanbot
+User-Agent: webcrusier
+User-Agent: Akari(selfrep)
+User-Agent: gobuster
+User-Agent: xsstest
+User-Agent: n-stealth
+User-Agent: AlScanner
+User-Agent: w3af.sf.net
+User-Agent: CrowdStrike
+User-Agent: nessus
+User-Agent: Havij
+User-Agent: dbappsecurity
+User-Agent: Sucuri
+User-Agent: nmap-nse
+User-Agent: sglmap
+User-Agent: HP ASC
+User-Agent: w3af.sourcefor
+User-Agent: Hydra
+User-Agent: nmap scripting
+User-Agent: WhatWeb
+User-Agent: nmap nse
+User-Agent: w3af.org
+User-Agent: SqIninja
+User-Agent: Arachni
+User-Agent: WPScan
+User-Agent: Wfuzz
+User-Agent: ScanAlert
+User-Agent: Pangolin
+User-Agent: Go-http-client
+User-Agent: AppScan
+User-Agent: OpenVAS
+User-Agent: Webinspect
+User-Agent: WebVulnscan
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0
+User-Agent: antSword/v2.1
+User-Agent: Appscan
+User-Agent: Rsas
+User-Agent: sqlmap
+User-Agent: acunetix_wvs_security_test
+Accept: acunetix/wvs
+Accept-Language: acunetix_wvs_security_test
+Accept: Appscan
+Spider-Name: crawlergo
+Acunetix-* : *
+Acunetix-Aspect-Password:
+Cookie: acunetixCookie
+Cookie: acunetix_wvs_security_test
+Cookie: acunetix
+Location: acunetix_wvs_security_test
+X-Forwarded-Host: acunetix_wvs_security_test
+X-Forwarded-For: acunetix_wvs_security_test
+Host: acunetix_wvs_security_test
+Origin: acunetix_wvs_security_test
+Referer: acunetix_wvs_security_test
+Via: acunetix_wvs_security_test
+Client-IP: acunetix_wvs_security_test
+HTTP_AUTH_PASSWD: acunetix
+Acunetix-Aspect-Queries:
+Acunetix-Aspect:
+x_forwarded_for: nessus
+referer: nessus
+host: nessus
+Content-Type: Appscan
+Content-Type: AppScanHeader

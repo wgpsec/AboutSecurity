@@ -35,3 +35,4 @@ P@ssw0rd
 redis
 redis123
 redis@123
+Password@_

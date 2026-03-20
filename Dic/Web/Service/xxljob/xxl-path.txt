@@ -1,0 +1,11 @@
+/xxl
+/xxl-job
+/xxl-test
+/xxl-dev
+/xxl-job-admin
+/xxl-job-dev
+/xxljobadmin
+/xxladmin
+/job-admin-dev
+/job
+/xxljob

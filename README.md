@@ -1,36 +1,27 @@
-<p align="center">
-    <img src="./assets/img/logo.png" width="30%">
-</p>
+# AboutSecurity
 
-<p align="center">
-    <img src="https://img.shields.io/badge/Category-Fuzz List-red.svg">
-    <img src="https://img.shields.io/github/last-commit/No-Github/AboutSecurity.svg?style=popout">
-    <img src="https://img.shields.io/github/repo-size/No-Github/AboutSecurity?color=yellow">
-</p>
+内部字典和 payload 集合
 
-English | [简体中文](README.zh-cn.md)
-
----
-
-* **INTRODUCTION** : Share dictionaries and payloads.
-* **Attributions** : ffffffff0x Team
-* **Repository Link** : https://github.com/ffffffff0x/AboutSecurity
+与原开源版本 https://github.com/ffffffff0x/AboutSecurity (22年停更) 相比
+- 重构了 web 目录扫描字典内容
+- 大量字典去重,优化
+- 添加了qa文档,默认密码文档
 
 ---
 
 ## Manual
 
-* **[Dic](./Dic/README.md)**
-    * Auth : Certified dictionaries
-        * Accounts and passwords.
-    * Network : network (computing)
-        * Excluded private IP segments, local IP segments, list of dns servers.
-    * Port : Port Dictionary
-        * Following the idea of port penetration, the service blast points carried by different ports are used as dictionary content.
-    * Regular : Dictionary of rules
-        * Various rules, arrangement of dictionaries.
-    * Web : Web Dictionaries
-        * As the name implies, burstable points that appear during web penetration serve as dictionary content.
+* **Dic**
+    * Auth : 认证字典
+        * 账号和密码。
+    * Network : 网络
+        * 排除的私有 IP 段、本地 IP 段、dns 服务器列表。
+    * Port : 端口字典
+        * 按照端口渗透的想法,将不同端口承载的服务可爆破点作为字典内容。
+    * Regular : 规则字典
+        * 各种规则、排列的字典整理。
+    * Web : Web 字典
+        * 顾名思义,在 web 渗透过程中出现的可爆破点作为字典内容。
 * **Payload**
     * Burp
     * CORS
@@ -43,25 +34,8 @@ English | [简体中文](README.zh-cn.md)
     * SSI
     * XSS
     * XXE
-* **VPS(Not maintaining this section, please use the [f8x](https://github.com/ffffffff0x/f8x) tool)**
-    * [Debian~](./VPS/Debian~.md) - Debian system infrastructure configuration.
-    * [Kali](./VPS/Kali.md) - Kali system infrastructure configuration.
-    * [RedHat~](./VPS/RedHat~.md) - RedHat system infrastructure configuration.
-* **[Cheatsheet](./Cheatsheet.md)** : Directly copy a pair during penetration testing for reference, information logging, teamwork, reporting, etc.
-
----
-
-## Disclaimer&License
-
-- <sup>This work is licensed under a [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).</sup>
-    - <sup>Share — copy and redistribute the material in any medium or format</sup>
-    - <sup>Adapt — remix, transform, and build upon the material for any purpose, even commercially.</sup>
-    - <sup>Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.</sup>
-    - <sup>ShareAlike — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.</sup>
-    - <sup>No additional restrictions — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.</sup>
-- <sup>Note: All documents in this project are for study and research purposes only, please do not use the documents in the project for illegal purposes, any negative impact caused by anyone has nothing to do with me.</sup>
-- <sup>Note: Downloading this repository will most likely result in your anti-virus software reporting viruses, please whitelist the project path. There are no malicious files in this project, however, due to the risk of local files containing attacks, it is not recommended to store these files on servers or other critical systems.</sup>
-
----
-
-> create by ffffffff0x
+* **Doc**
+    * **Checklist** : 渗透测试过程中的检查项,杜绝少测、漏测的情况。
+    * **Cheatsheet** : 渗透测试信息收集表,渗透测试时直接复制一副作为参考、信息记录、方便团队协作、出报告等。
+    * **出报告专用** : 记录部分平常渗透测试遇到的案例。
+    * **行业名词**

@@ -3,5 +3,4 @@ manager
 role1
 root
 tomcat
-both
 test

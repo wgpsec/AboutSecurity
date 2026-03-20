@@ -35,3 +35,4 @@ user
 web
 postgres123
 P@ssw0rd
+Password@_

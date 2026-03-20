@@ -162,3 +162,12 @@ www123456
 123qwe!@#
 a12345678.
 admin123.
+Q1a2z3
+China@888
+ABCabc@123
+0000abc!
+QAZwsx123
+Super123!@#
+rmi://1.1.1.1:1099
+ladp://1.1.1.1:1099
+Password@_
