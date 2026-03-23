@@ -31,6 +31,7 @@
     * lateral (3) : 内网渗透类 — AD 域攻击、内网侦察、多层网络穿透
     * cloud (2) : 云环境类 — 云元数据利用、IAM 权限审计与提权
     * general (4) : 综合类 — 红队评估、移动后端 API、报告生成、供应链审计
+    * 📊 **Skill Benchmark**: `python scripts/bench-skill.py --all` — A/B 测试 Skill 对 Agent 的实际效果
 * **Tools** — 外部工具声明式 YAML 配置
     * scan : 扫描工具 (nmap, masscan)
     * fuzz : Fuzz 工具 (dirsearch)

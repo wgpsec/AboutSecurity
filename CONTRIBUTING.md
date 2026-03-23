@@ -636,7 +636,72 @@ metadata:
 
 ---
 
-# 四、常见问题
+# 四、Skill 质量基准测试
+
+## 4.1 概述
+
+每个 Skill 可以包含 `evals/evals.json` 定义测试场景，用于衡量 Skill 对 AI Agent 的实际帮助程度。
+
+基准测试通过 A/B 对比实现：
+- **with_skill**: Agent 加载 Skill 内容后回答
+- **without_skill**: Agent 不加载 Skill（baseline）回答
+- 对比两组的断言通过率、耗时、token 用量
+
+## 4.2 evals.json 格式
+
+```json
+{
+  "skill_name": "sql-injection-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "sqli-detection-basic",
+      "prompt": "你在测试一个 Web 应用...",
+      "expected_output": "系统化的 SQL 注入检测流程",
+      "expectations": [
+        "UNION SELECT|UNION 注入|联合查询",
+        "时间盲注|SLEEP|BENCHMARK|time-based",
+        "布尔盲注|Boolean|1=1"
+      ]
+    }
+  ]
+}
+```
+
+**expectations 格式**：
+- 用 `|` 分隔关键词替代项（满足任一即通过）
+- 示例：`"UNION SELECT|联合查询"` → 输出包含 "UNION SELECT" 或 "联合查询" 即通过
+
+## 4.3 运行基准测试
+
+```bash
+# 测试单个 Skill
+python scripts/bench-skill.py --skill Skills/exploit/sql-injection-methodology
+
+# 多次运行（方差分析）
+python scripts/bench-skill.py --skill Skills/exploit/sql-injection-methodology --runs 3
+
+# 测试所有有 evals 的 Skills
+python scripts/bench-skill.py --all
+
+# 使用 LLM 评分（更准确，但消耗 token）
+python scripts/grade_eval.py --workspace benchmarks/sql-injection-methodology/iteration-xxx
+```
+
+需要安装 Claude CLI (`claude -p`)。输出保存到 `benchmarks/<skill-name>/` 目录。
+
+## 4.4 输出格式
+
+兼容 skill-creator 的 benchmark.json schema：
+- `benchmark.json` — 结构化数据（pass_rate, timing, tokens, delta）
+- `benchmark.md` — 人类可读的对比报告
+- 每个 run 的 `grading.json` — 逐条断言评估结果
+
+可直接使用 skill-creator 的 `generate_review.py` 在浏览器中查看结果。
+
+---
+
+# 五、常见问题
 
 **Q: 工具输出没有固定格式怎么办？**
 A: 使用 `parser: regex` 用正则提取关键信息，或使用 `mode: stdout` + `parser: line` 逐行处理。

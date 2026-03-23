@@ -4,3 +4,6 @@ qa.md
 upload.sh
 zip.sh
 .github
+
+# Benchmark outputs (generated, not committed)
+/benchmarks/
