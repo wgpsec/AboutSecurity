@@ -1,0 +1,434 @@
+# CTF Forensics - Steganography
+
+Non-image steganography techniques (PDF, SVG, terminal, text, compression, spreadsheet) and general-purpose image stego patterns (PNG structure, file overlays, GIF, autostereograms, interleaving). For image-specific steganography (JPEG DQT/F5/slack, BMP bitplane, PNG palette, pixel permutation, edge matching), see [stego-image.md](stego-image.md). For advanced techniques (FFT, SSTV, audio, video, JPEG XL), see [stego-advanced.md](stego-advanced.md).
+
+## Table of Contents
+- [Quick Tools](#quick-tools)
+- [Binary Border Steganography](#binary-border-steganography)
+- [Multi-Layer PDF Steganography (Pragyan 2026)](#multi-layer-pdf-steganography-pragyan-2026)
+- [Advanced PDF Steganography (Nullcon 2026 rdctd series)](#advanced-pdf-steganography-nullcon-2026-rdctd-series)
+- [SVG Animation Keyframe Steganography (UTCTF 2024)](#svg-animation-keyframe-steganography-utctf-2024)
+- [PNG Chunk Reordering (0xFun 2026)](#png-chunk-reordering-0xfun-2026)
+- [File Format Overlays (0xFun 2026)](#file-format-overlays-0xfun-2026)
+- [Nested PNG with Iterating XOR Keys (VuwCTF 2025)](#nested-png-with-iterating-xor-keys-vuwctf-2025)
+- [GIF Frame Differential + Morse Code (BaltCTF 2013)](#gif-frame-differential--morse-code-baltctf-2013)
+- [GZSteg + Spammimic Text Steganography (VolgaCTF 2013)](#gzsteg--spammimic-text-steganography-volgactf-2013)
+- [Spreadsheet Frequency Analysis Binary Recovery (Sharif CTF 2016)](#spreadsheet-frequency-analysis-binary-recovery-sharif-ctf-2016)
+- [Kitty Terminal Graphics Protocol Decoding (BSidesSF 2026)](#kitty-terminal-graphics-protocol-decoding-bsidessf-2026)
+- [ANSI Escape Sequence Steganography in Terminal Art (BSidesSF 2026)](#ansi-escape-sequence-steganography-in-terminal-art-bsidessf-2026)
+- [Autostereogram / Magic Eye Solving (BSidesSF 2026)](#autostereogram--magic-eye-solving-bsidessf-2026)
+- [Two-Layer Byte+Line Interleaving (BSidesSF 2026)](#two-layer-byteline-interleaving-bsidessf-2026)
+
+---
+
+## Quick Tools
+
+```bash
+steghide extract -sf image.jpg
+zsteg image.png              # PNG/BMP analysis
+stegsolve                    # Visual analysis
+
+# Steghide brute-force (0xFun 2026)
+stegseek image.jpg rockyou.txt  # Faster than stegcracker
+# Common weak passphrases: "simple", "password", "123456"
+```
+
+---
+
+## Binary Border Steganography
+
+**Pattern (Framer, PascalCTF 2026):** Message encoded as black/white pixels in 1-pixel border around image.
+
+```python
+from PIL import Image
+
+img = Image.open('output.jpg')
+w, h = img.size
+bits = []
+
+# Read border clockwise: top → right → bottom (reversed) → left (reversed)
+for x in range(w): bits.append(0 if sum(img.getpixel((x, 0))[:3]) < 384 else 1)
+for y in range(1, h): bits.append(0 if sum(img.getpixel((w-1, y))[:3]) < 384 else 1)
+for x in range(w-2, -1, -1): bits.append(0 if sum(img.getpixel((x, h-1))[:3]) < 384 else 1)
+for y in range(h-2, 0, -1): bits.append(0 if sum(img.getpixel((0, y))[:3]) < 384 else 1)
+
+# Convert bits to ASCII
+msg = ''.join(chr(int(''.join(map(str, bits[i:i+8])), 2)) for i in range(0, len(bits)-7, 8))
+```
+
+---
+
+## Multi-Layer PDF Steganography (Pragyan 2026)
+
+**Pattern (epstein files):** Flag hidden across multiple layers in a PDF.
+
+**Layer checklist:**
+1. `strings file.pdf | grep -i hidden` -- hidden comments in PDF objects
+2. Extract hex strings, try XOR with theme-related keywords
+3. Check bytes **after `%%EOF`** marker -- may contain GPG/encrypted data
+4. Try ROT18 (ROT13 on letters + ROT5 on digits) as final decode layer
+
+```bash
+# Extract post-EOF data
+python3 -c "
+data = open('file.pdf','rb').read()
+eof = data.rfind(b'%%EOF')
+print(data[eof+5:].hex())
+"
+```
+
+---
+
+## Advanced PDF Steganography (Nullcon 2026 rdctd series)
+
+Six distinct hiding techniques in a single PDF:
+
+**1. Invisible text separators:** Underscores rendered as invisible line segments. Extract with `pdftotext -layout` and normalize whitespace to underscores.
+
+**2. URI annotations with escaped braces:** Link annotations contain flag in URI with `\{` and `\}` escapes:
+```python
+import pikepdf
+pdf = pikepdf.Pdf.open(pdf_path)
+for page in pdf.pages:
+    for annot in (page.get("/Annots") or []):
+        obj = annot.get_object()
+        if obj.get("/Subtype") == pikepdf.Name("/Link"):
+            uri = str(obj.get("/A").get("/URI")).replace(r"\{", "{").replace(r"\}", "}")
+            # Check for flag pattern
+```
+
+**3. Blurred/redacted image with Wiener deconvolution:**
+```python
+from skimage.restoration import wiener
+import numpy as np
+
+def gaussian_psf(sigma):
+    k = int(sigma * 6 + 1) | 1
+    ax = np.arange(-(k//2), k//2 + 1, dtype=np.float32)
+    xx, yy = np.meshgrid(ax, ax)
+    psf = np.exp(-(xx**2 + yy**2) / (2 * sigma * sigma))
+    return psf / psf.sum()
+
+img_arr = np.asarray(img.convert("L")).astype(np.float32) / 255.0
+deconv = wiener(img_arr, gaussian_psf(3.0), balance=0.003, clip=False)
+```
+
+**4. Vector rectangle QR code:** Hundreds of tiny filled rectangles (e.g., 1.718x1.718 units) forming a QR code. Parse PDF content stream for `re` operators, extract centers, render as grid, decode with `zbarimg`.
+
+**5. Compressed object streams:** Use `mutool clean -d -c -m input.pdf output.pdf` to decompress all streams, then `strings` to search.
+
+**6. Document metadata:** Check Producer, Author, Keywords fields: `pdfinfo doc.pdf` or `exiftool doc.pdf`.
+
+**Official writeup details (Nullcon 2026 rdctd 1-6):**
+- **rdctd 1:** Flag is visible in plain text (Section 3.4)
+- **rdctd 2:** Flag in hyperlink URI with escaped braces (`\{`, `\}`)
+- **rdctd 3:** LSB stego in Blue channel, **bit plane 5** (not bit 0!). Use `zsteg` with all planes: `zsteg -a extracted.ppm | grep ENO`
+- **rdctd 4:** QR code hidden under black redaction box. Use Master PDF Editor to remove the box, scan QR
+- **rdctd 5:** Flag in FlateDecode compressed stream (not visible with `strings`):
+  ```python
+  import re, zlib
+  pdf = open('file.pdf', 'rb').read()
+  for s in re.findall(b'stream[\r\n]+(.*?)[\r\n]+endstream', pdf, re.S):
+      try:
+          dec = zlib.decompress(s)
+          if b'ENO{' in dec: print(dec)
+      except: pass
+  ```
+- **rdctd 6:** Flag in `/Producer` metadata field
+
+**Comprehensive PDF flag hunt checklist:**
+1. `strings -a file.pdf | grep -o 'FLAG_FORMAT{[^}]*}'`
+2. `exiftool file.pdf` (all metadata fields)
+3. `pdfimages -all file.pdf img` + `zsteg -a img-*.ppm`
+4. Open in PDF editor, check for overlay/redaction boxes hiding content
+5. Decompress FlateDecode streams and search
+6. Parse link annotations for URIs with escaped characters
+7. `mutool clean -d file.pdf clean.pdf && strings clean.pdf`
+
+---
+
+## SVG Animation Keyframe Steganography (UTCTF 2024)
+
+**Pattern (Insanity Check):** SVG favicon contains animation keyframes with alternating fill colors.
+
+**Encoding:** `#FFFF` = 1, `#FFF6` = 0. Timing intervals (~0.314s or 3x0.314s) encode Morse code dots/dashes.
+
+**Detection:** SVG files with `<animate>` tags, `keyTimes`/`values` attributes. Check favicon.svg and other vector assets. Two-value alternation patterns encode binary or Morse.
+
+---
+
+## PNG Chunk Reordering (0xFun 2026)
+
+**Pattern (Spectrum):** Invalid PNG has chunks out of order.
+
+**Fix:** Reorder to: `signature + IHDR + (ancillary chunks) + (all IDAT in order) + IEND`.
+
+```python
+import struct
+
+with open('broken.png', 'rb') as f:
+    data = f.read()
+
+sig = data[:8]
+chunks = []
+pos = 8
+while pos < len(data):
+    length = struct.unpack('>I', data[pos:pos+4])[0]
+    chunk_type = data[pos+4:pos+8]
+    chunk_data = data[pos+8:pos+8+length]
+    crc = data[pos+8+length:pos+12+length]
+    chunks.append((chunk_type, length, chunk_data, crc))
+    pos += 12 + length
+
+# Sort: IHDR first, IEND last, IDATs in original order
+ihdr = [c for c in chunks if c[0] == b'IHDR']
+idat = [c for c in chunks if c[0] == b'IDAT']
+iend = [c for c in chunks if c[0] == b'IEND']
+other = [c for c in chunks if c[0] not in (b'IHDR', b'IDAT', b'IEND')]
+
+with open('fixed.png', 'wb') as f:
+    f.write(sig)
+    for typ, length, data, crc in ihdr + other + idat + iend:
+        f.write(struct.pack('>I', length) + typ + data + crc)
+```
+
+---
+
+## File Format Overlays (0xFun 2026)
+
+**Pattern (Pixel Rehab):** Archive appended after PNG IEND, but magic bytes overwritten with PNG signature.
+
+**Detection:** Check bytes after IEND for appended data. Compare magic bytes against known formats.
+
+```python
+# Find IEND, check what follows
+data = open('image.png', 'rb').read()
+iend_pos = data.find(b'IEND') + 8  # After IEND + CRC
+trailer = data[iend_pos:]
+# Replace first 6 bytes with 7z magic if they match PNG sig
+if trailer[:4] == b'\x89PNG':
+    trailer = b'\x37\x7a\xbc\xaf\x27\x1c' + trailer[6:]
+    open('hidden.7z', 'wb').write(trailer)
+```
+
+---
+
+## Nested PNG with Iterating XOR Keys (VuwCTF 2025)
+
+**Pattern (Matroiska):** Each PNG layer XOR-encrypted with incrementing keys ("layer2", "layer3", etc.).
+
+**Identification:** Matryoshka/nested hints. Try incrementing key patterns for recursive extraction.
+
+---
+
+## GIF Frame Differential + Morse Code (BaltCTF 2013)
+
+**Pattern:** Animated GIF contains hidden dots visible only when comparing frames against originals. Dots encode Morse code.
+
+```bash
+# Extract frames from animated GIF
+convert animated.gif frame_%03d.gif
+
+# Compare each frame against its base using ImageMagick
+for i in $(seq 1 100); do
+    compare -fuzz 10% -compose src stego_$i.gif original_$i.gif diff_$i.gif
+done
+
+# Inspect diff images — dots appear at specific positions
+# Map dot patterns to Morse: small dot = dit, large dot = dah
+```
+
+**Key insight:** `compare -fuzz 10%` reveals subtle single-pixel modifications invisible to the eye. The diff images show isolated dots whose timing/spacing encodes Morse code. Decode dots → dashes/dots → letters → flag.
+
+---
+
+## GZSteg + Spammimic Text Steganography (VolgaCTF 2013)
+
+**Pattern:** Data hidden within gzip compression metadata, decoded through spammimic.com.
+
+1. Apply GZSteg patches to gzip 1.2.4 source, compile, extract with `gzip --s` flag
+2. Extracted text resembles spam email — submit to [spammimic.com](https://www.spammimic.com/) decoder
+3. Decoded output is the flag
+
+**Key insight:** GZSteg exploits redundancy in the gzip DEFLATE compression format to embed covert data. The extracted payload often uses a second steganographic layer (spammimic encodes data as innocuous-looking spam text). Look for `.gz` files larger than expected for their content.
+
+---
+
+## Spreadsheet Frequency Analysis Binary Recovery (Sharif CTF 2016)
+
+When spreadsheet cells contain numbers with varying frequencies, the frequency rank may encode binary data:
+
+1. **Count occurrences** of each unique value
+2. **Sort by frequency** to create a mapping: value -> frequency rank (0-255)
+3. **Replace each cell** with its frequency rank to recover raw bytes
+
+```python
+from collections import Counter
+
+# Count frequency of each value
+freq = Counter(all_cell_values)
+
+# Create mapping: value -> index in frequency-sorted list
+sorted_vals = sorted(freq.keys(), key=lambda x: freq[x])
+mapping = {v: i for i, v in enumerate(sorted_vals)}
+
+# Apply mapping to recover binary
+binary = bytes(mapping[v] for v in all_cell_values)
+# Result is typically an ELF binary or image
+```
+
+**Key insight:** 256 unique values suggest byte-level encoding. The frequency distribution of the mapped output should resemble typical binary file statistics.
+
+---
+
+## Kitty Terminal Graphics Protocol Decoding (BSidesSF 2026)
+
+**Pattern (kitty):** A file contains Kitty terminal graphics protocol escape sequences (`ESC_G`) that embed zlib-compressed RGB image data in base64-encoded chunks.
+
+**Protocol format:**
+```text
+\x1b_Ga=T,q=2,f=24,o=z,m=1,s=WIDTH,v=HEIGHT;BASE64DATA\x1b\\
+```
+
+**Header fields:**
+- `a=T` — action: transmit
+- `q=2` — quiet mode (suppress responses)
+- `f=24` — format: 24-bit RGB
+- `o=z` — compression: zlib
+- `m=1` — more chunks follow; `m=0` — final chunk
+- `s=WIDTH,v=HEIGHT` — image dimensions (present in first chunk only)
+
+**Decoding workflow:**
+```python
+import re
+import base64
+import zlib
+from PIL import Image
+
+# Read the raw file
+data = open('kitty_output.bin', 'rb').read()
+
+# Extract all base64 payloads from escape sequences
+# Pattern: \x1b_G...;BASE64\x1b\\
+chunks = re.findall(rb'\x1b_G([^;]*);([^\x1b]*)\x1b\\\\', data)
+
+# Parse dimensions from first chunk's header
+first_header = chunks[0][0].decode()
+width = int(re.search(r's=(\d+)', first_header).group(1))
+height = int(re.search(r'v=(\d+)', first_header).group(1))
+
+# Concatenate all base64 payloads
+b64_data = b''.join(chunk[1] for chunk in chunks)
+compressed = base64.b64decode(b64_data)
+raw_rgb = zlib.decompress(compressed)
+
+# Reconstruct image
+img = Image.frombytes('RGB', (width, height), raw_rgb)
+img.save('recovered.png')
+```
+
+**Key insight:** Kitty graphics protocol is a modern terminal image display mechanism. The data is invisible when viewed in non-Kitty terminals but can be decoded from the raw escape sequences. Multi-chunk messages (`m=1` followed by continuation chunks) must be concatenated before base64 decoding.
+
+**Detection:** Binary file containing `\x1b_G` sequences. `strings` output shows base64-like data interspersed with escape codes. Challenge mentions "kitty", "terminal graphics", or "meow".
+
+**References:** BSidesSF 2026 "kitty"
+
+---
+
+## ANSI Escape Sequence Steganography in Terminal Art (BSidesSF 2026)
+
+**Pattern (roar):** Flag text is interleaved between ANSI color escape codes and Unicode braille characters in terminal art. When rendered in a terminal, the art displays normally while the flag characters are invisible (zero-width or same-color-as-background). However, the flag is extractable by stripping all escape sequences and non-ASCII characters.
+
+**Extraction:**
+```python
+import re
+
+data = open('art.txt', 'rb').read().decode('utf-8', errors='replace')
+
+# Strip ANSI escape sequences
+clean = re.sub(r'\x1b\[[0-9;]*[a-zA-Z]', '', data)
+
+# Extract only printable ASCII (flag characters)
+flag_chars = [c for c in clean if 32 <= ord(c) <= 126 and c not in ' \t\n']
+
+# Or: filter out braille unicode block (U+2800-U+28FF) and other non-ASCII
+flag_chars = [c for c in clean if ord(c) < 128 and c.isprintable() and c != ' ']
+
+print(''.join(flag_chars))
+```
+
+**Alternative approach — diff against rendered output:**
+```bash
+# Render with ANSI codes, capture visible text
+cat art.txt | col -b > rendered.txt
+# Compare raw vs rendered to find hidden characters
+```
+
+**Key insight:** ANSI escape sequences control terminal colors, cursor position, and text attributes. Flag characters inserted between escape codes are technically present in the file but invisible when rendered because they're either: (a) the same color as the background, (b) followed by a cursor-move-back sequence, or (c) overwritten by subsequent characters. Raw byte extraction bypasses all rendering tricks.
+
+**Detection:** File with many `\x1b[` sequences (ANSI codes), Unicode braille characters (U+2800-U+28FF), and unexpectedly large file size for the visible content. Challenge mentions "terminal", "art", "ANSI", or shows ASCII/Unicode art.
+
+**References:** BSidesSF 2026 "roar"
+
+---
+
+### Autostereogram / Magic Eye Solving (BSidesSF 2026)
+
+**Pattern (stereotype):** Challenge image is an autostereogram (Magic Eye). The hidden 3D content (flag text) is revealed by viewing with crossed/divergent eyes or programmatically via layer difference.
+
+**Programmatic solve (GIMP or Python):**
+1. Duplicate the image as a second layer
+2. Set the top layer's blending mode to "Difference"
+3. Slide the top layer horizontally by the repeat width (~100 pixels)
+4. The hidden depth pattern appears as bright lines on a dark background
+
+```python
+from PIL import Image
+import numpy as np
+
+img = np.array(Image.open('stereogram.png'))
+shift = 100  # Repeat width — try values 80-120
+diff = np.abs(img[:, shift:].astype(int) - img[:, :-shift].astype(int))
+Image.fromarray(diff.astype(np.uint8)).save('revealed.png')
+```
+
+**Finding the shift value:** The repeat width is the horizontal distance between identical vertical strips. Autocorrelate a single row: `np.correlate(row, row, mode='full')` — the first peak after center is the shift.
+
+**Key insight:** Autostereograms encode depth via horizontal pixel displacement relative to a repeating pattern. Subtracting the image from a shifted copy of itself cancels the repeating background and reveals the depth variation as the flag text.
+
+**When to recognize:** Image has a repeating texture/pattern, challenge mentions "eyes", "seeing", "3D", "magic", or "stereogram".
+
+**References:** BSidesSF 2026 "stereotype"
+
+---
+
+### Two-Layer Byte+Line Interleaving (BSidesSF 2026)
+
+**Pattern (seeing-double):** Two PNG files are interleaved at the byte level into a single file. After byte-level deinterlacing, the resulting images have their scanlines interleaved, requiring a second round of line-level deinterlacing.
+
+**Step 1 — Byte deinterleave:**
+```python
+data = open('interleaved.ppnngg', 'rb').read()
+file_a = bytes(data[i] for i in range(0, len(data), 2))  # Even bytes
+file_b = bytes(data[i] for i in range(1, len(data), 2))  # Odd bytes
+# file_a and file_b are valid PNGs
+```
+
+**Step 2 — Line deinterleave (if needed):**
+```python
+from PIL import Image
+import numpy as np
+
+img = np.array(Image.open('file_a.png'))
+# Even lines form one sub-image, odd lines form another
+sub1 = img[0::2]  # Lines 0, 2, 4, ...
+sub2 = img[1::2]  # Lines 1, 3, 5, ...
+Image.fromarray(sub1).save('final_a.png')
+Image.fromarray(sub2).save('final_b.png')
+```
+
+**Key insight:** The two-layer interleaving (first bytes, then scanlines) means simple deinterleaving at one level produces garbled results. Recognize multi-layer interleaving by: (1) deinterleaved file is a valid image but content looks "striped" or has alternating line artifacts, (2) file extension hints (`.ppnngg` = two PNGs interleaved).
+
+**Detection:** File has double-extension or unusual extension. `file` command may identify it as data or as one format. Even/odd byte extraction produces valid file headers (e.g., both halves start with PNG magic `89 50 4E 47`).
+
+**References:** BSidesSF 2026 "seeing-double"
