@@ -2,7 +2,7 @@
 name: subdomain-deep
 description: "深度子域名挖掘，多源联合枚举。当需要最大化子域名发现覆盖率、常规 DNS 枚举结果不足、或目标使用了 CDN/通配符 DNS 时使用。联合 DNS 爆破、OSINT 引擎、爬虫三种方式交叉发现"
 metadata:
-  tags: "recon,subdomain,dns,osint,crawl,子域名,枚举,爆破,DNS,资产发现"
+  tags: "recon,subdomain,dns,osint,crawl,子域名,枚举,爆破,DNS,资产发现,amass,subfinder"
   difficulty: "medium"
   icon: "🔎"
   category: "侦察"

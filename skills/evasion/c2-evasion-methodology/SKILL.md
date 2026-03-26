@@ -2,7 +2,7 @@
 name: c2-evasion-methodology
 description: "C2框架免杀方法论：分析C2源码、搜索检测规则(YARA/Sigma/Snort)、逐规则分析、修改源码绕过检测。当需要C2免杀、YARA规则分析、Beacon/Implant源码修改时使用。"
 metadata:
-  tags: "c2,evasion,yara,sigma,beacon,implant,detection-bypass,免杀,source-modification,command and control,C2隐蔽,C2 evasion,covert channel,隐蔽通信,EDR bypass"
+  tags: "c2,evasion,yara,sigma,beacon,implant,detection-bypass,免杀,source-modification"
   difficulty: "hard"
   icon: "🛡️"
   category: "免杀对抗"

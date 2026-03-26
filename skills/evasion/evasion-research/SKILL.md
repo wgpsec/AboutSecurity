@@ -2,7 +2,7 @@
 name: evasion-research
 description: "GitHub 安全研究方法论：搜索 GitHub 上的免杀/Loader/C2 技术仓库，分析代码模式，提取新技术入库。当需要搜索新免杀技术、分析开源仓库、更新知识库时使用。"
 metadata:
-  tags: "research,github,evasion,loader,shellcode,technique,knowledge-base,evasion research,EDR bypass,规避研究,检测绕过,bypass研究,规避检测"
+  tags: "research,github,evasion,loader,shellcode,technique,knowledge-base,规避研究,检测绕过,bypass研究,规避检测"
   difficulty: "easy"
   icon: "🔍"
   category: "免杀对抗"

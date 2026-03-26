@@ -2,7 +2,7 @@
 name: evasion-technique-integrate
 description: "免杀技术整合：将免杀技术（API 混淆、字符串加密、Syscall、反调试、AMSI 绕过等）植入已有 Loader 代码。当需要二开 Loader、添加免杀技术、绕过杀软时使用。"
 metadata:
-  tags: "evasion,integrate,api-hashing,xor,syscall,anti-debug,amsi,unhooking,bypass,evasion technique,规避技术整合,免杀技术,evasion integrate,payload免杀"
+  tags: "evasion,integrate,api-hashing,xor,syscall,anti-debug,amsi,unhooking,bypass"
   difficulty: "medium"
   icon: "🔧"
   category: "免杀对抗"

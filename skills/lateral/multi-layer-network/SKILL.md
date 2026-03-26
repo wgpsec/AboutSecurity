@@ -2,7 +2,7 @@
 name: multi-layer-network
 description: "多层网络渗透与隧道搭建。当需要从 DMZ 跳转到内网、跨网段渗透、或目标在多层防火墙/网络分区后面时使用。覆盖代理搭建(frp/chisel/SSH)、多跳隧道链、端口转发、SOCKS 代理。从边界突破到域控的完整多层攻击路径"
 metadata:
-  tags: "pivot,proxy,tunnel,multi-layer,lateral,隧道,代理,端口转发,frp,chisel,ssh,socks,内网穿透,跳板"
+  tags: "pivot,proxy,tunnel,multi-layer,lateral,隧道,代理,端口转发,frp,chisel,ssh,socks,内网穿透,跳板,DMZ"
   difficulty: "hard"
   icon: "🌐"
   category: "横向移动"

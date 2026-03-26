@@ -2,7 +2,7 @@
 name: ctf-source-audit
 description: "CTF 挑战中的源码审计方法。当通过 .git 泄露、备份文件下载、LFI 读取等方式获取到目标源码时使用。与真实代码审计不同——CTF 源码中的漏洞是故意设置的，通常只有 1-2 个关键点。覆盖 PHP/Python/Node.js/Java 的常见 CTF 漏洞模式"
 metadata:
-  tags: "ctf,source,audit,code review,源码审计,php,python,node,java,代码审计,source audit,SAST,code audit,source code review"
+  tags: "ctf,source,audit,code review,源码审计,php,python,node,java,代码审计,SAST"
   difficulty: "medium"
   icon: "📝"
   category: "CTF"

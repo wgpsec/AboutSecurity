@@ -36,12 +36,12 @@
     {
       "id": 1,
       "name": "ctf-misc-scenario",
-      "scenario": "CTF 杂项题给了一个包含隐写信息的 PNG 图片。请搜索杂项题解题方法论。",
+      "scenario": "CTF 杂项题，题目给了一个奇怪格式的文件，文件名是 challenge.dat，不知道是什么类型。请搜索 CTF Misc 解题方法论。",
       "max_rounds": 2,
       "expect_tool_calls": [
         {
           "tool": "list_skills",
-          "keyword_contains": "misc|杂项|隐写|steg"
+          "keyword_contains": "misc|杂项|ctf misc|ctf"
         },
         {
           "tool": "read_skill",

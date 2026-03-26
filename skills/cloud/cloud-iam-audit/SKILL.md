@@ -2,7 +2,7 @@
 name: cloud-iam-audit
 description: "云 IAM 权限审计与提权。当获取了云平台凭据（AWS AK/SK、Azure SPN、GCP SA）需要评估权限范围和提权路径时使用。覆盖 AWS/Azure/GCP 的 IAM 策略分析、常见提权路径（PassRole、AssumeRole、Lambda 提权）、跨账号攻击、CloudTrail 规避"
 metadata:
-  tags: "cloud,iam,audit,privilege,escalation,aws,azure,gcp,提权,权限,凭据,PassRole,privilege escalation,IAM提权,云权限审计,iam audit"
+  tags: "cloud,iam,audit,privilege,escalation,aws,azure,gcp,提权,权限,凭据,PassRole"
   difficulty: "hard"
   icon: "🔒"
   category: "云环境"

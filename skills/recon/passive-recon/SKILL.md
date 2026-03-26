@@ -2,7 +2,7 @@
 name: passive-recon
 description: "纯被动 OSINT 情报收集，不触碰目标。当需要在不被目标察觉的情况下收集资产情报、在正式渗透前做预研、或通过 FOFA/Quake/Hunter 等搜索引擎发现暴露资产时使用。同时适用于需要从多引擎交叉比对获取完整资产视图的场景"
 metadata:
-  tags: "osint,passive,fofa,quake,hunter,被动侦察,情报收集,资产发现,搜索引擎,passive reconnaissance,被动信息收集,passive recon,whois,dns"
+  tags: "osint,passive,fofa,quake,hunter,被动侦察,情报收集,资产发现,搜索引擎,whois,dns"
   difficulty: "easy"
   icon: "🕵️"
   category: "侦察"

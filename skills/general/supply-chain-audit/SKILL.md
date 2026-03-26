@@ -2,7 +2,7 @@
 name: supply-chain-audit
 description: "供应链安全审计。当需要检查目标使用的第三方组件、JS 库、CDN 资源、SaaS 服务的安全风险时使用。覆盖组件版本发现、CVE 关联、子域名接管、JS 库投毒检测、CDN 安全配置评估"
 metadata:
-  tags: "supply-chain,component,cdn,third-party,js,npm,subdomain-takeover,供应链,组件安全,supply chain audit,供应链审计,dependency audit,依赖审计,组件审计,第三方安全"
+  tags: "supply-chain,component,cdn,third-party,js,npm,subdomain-takeover,供应链,组件安全"
   difficulty: "medium"
   icon: "🔗"
   category: "综合"
