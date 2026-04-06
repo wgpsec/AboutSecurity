@@ -94,9 +94,22 @@ lsof -i                    # 开放端口对应的服务
 
 LFI 比 RCE 限制更多——只能读文件，不能执行命令。
 
+**路径遍历找 flag 时，对每个深度同时尝试多种文件名变体：**
+
+```
+# 每个深度都要批量测试这些变体（不要只试 flag 不试 flag.txt！）
+../flag          ../flag.txt        ../.flag         ../flag.md
+../../flag       ../../flag.txt     ../../.flag
+../../../flag    ../../../flag.txt  ../../../.flag
+# 同时测试绝对路径
+/flag            /flag.txt          /root/flag.txt   /tmp/flag
+```
+
+> ⚠️ **常见失败模式**：只尝试 `../flag` 而忽略 `../flag.txt`，导致超时。务必同时发送带后缀和不带后缀的变体。
+
 **优先级顺序：**
 
-1. **标准 flag 路径**：`/flag.txt`、`/flag`、`/root/flag.txt`
+1. **标准 flag 路径**：对每个深度（`../`、`../../`、`../../../`）同时尝试 `flag`、`flag.txt`、`.flag`、`flag.md`
 2. **确认可读性**：`/etc/passwd` 能读 → 说明 LFI 有效
 3. **配置文件**（找更多凭据）：
    ```

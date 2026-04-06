@@ -42,11 +42,14 @@ netstat -tlnp             # 内网服务可能藏着 flag
 ## 情况 B: 有文件读取（LFI）
 
 按优先级：
-1. `/flag.txt`, `/flag`, `/flag.php`
-2. `/etc/passwd` — 确认可读性
-3. `/var/www/html/config.php` — 数据库凭据
-4. `/proc/self/environ` — 环境变量中的 flag
-5. 源码文件 — 发现更多漏洞
+1. `/flag.txt`, `/flag`, `/flag.php`, `/.flag`, `/flag.md`
+2. 路径遍历：对 `../`、`../../`、`../../../` 每个深度都同时尝试 `flag`、`flag.txt`、`.flag`
+3. `/etc/passwd` — 确认可读性
+4. `/var/www/html/config.php` — 数据库凭据
+5. `/proc/self/environ` — 环境变量中的 flag
+6. 源码文件 — 发现更多漏洞
+
+> ⚠️ 路径遍历时必须同时发送带后缀和不带后缀的变体，不要只试 `../flag` 不试 `../flag.txt`
 
 LFI 转 RCE：PHP session 文件写入、日志投毒、php://filter
 
