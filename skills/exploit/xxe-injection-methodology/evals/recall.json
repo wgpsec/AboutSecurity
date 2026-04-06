@@ -1,0 +1,55 @@
+{
+  "skill_id": "xxe-injection-methodology",
+  "recall_tests": [
+    {
+      "id": 1,
+      "type": "keyword_positive",
+      "description": "核心关键词",
+      "keywords": [
+        "xxe",
+        "xml external entity",
+        "xml injection"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "keyword_positive",
+      "description": "技术搜索",
+      "keywords": [
+        "dtd",
+        "blind-xxe",
+        "parameter-entity",
+        "soap",
+        "svg"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "keyword_negative",
+      "description": "不应被纯SSRF召回",
+      "keywords": [
+        "gopher",
+        "cloud-metadata",
+        "ip-bypass"
+      ]
+    }
+  ],
+  "llm_tests": [
+    {
+      "id": 1,
+      "name": "xxe-scenario",
+      "scenario": "目标有 XML 文件上传功能，上传 XML 文件后服务端解析并返回结果。请搜索 XXE 相关方法论。",
+      "max_rounds": 2,
+      "expect_tool_calls": [
+        {
+          "tool": "list_skills",
+          "keyword_contains": "xxe|xml|external entity"
+        },
+        {
+          "tool": "read_skill",
+          "id": "xxe-injection-methodology"
+        }
+      ]
+    }
+  ]
+}

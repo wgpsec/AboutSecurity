@@ -1,0 +1,41 @@
+{
+  "skill_name": "ssrf-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ssrf-gopher-trap",
+      "prompt": "你确认了 SSRF 漏洞，想通过 gopher:// 协议攻击内网的 Redis 服务(127.0.0.1:6379)。目标应用用 Python requests 库发起请求。请分析可行性。",
+      "expected_output": "识别 Python requests 不支持 gopher 协议的陷阱",
+      "expectations": [
+        "Python requests|不支持gopher|只支持HTTP/HTTPS",
+        "PHP curl|支持gopher|语言差异|库差异",
+        "替代方案|dict://|HTTP协议|其他方式攻击Redis",
+        "file://|文件读取|可能可用",
+        "库限制|不同实现|不是所有SSRF都支持所有协议"
+      ],
+      "required_terms": [
+        "PHP curl",
+        "只支持HTTP/HTTPS",
+        "dict://"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ssrf-ip-filter-bypass-encoding",
+      "prompt": "SSRF 防护过滤了 127.0.0.1、localhost、169.254.169.254 和所有内网 IP。DNS rebinding 不可行。请给出至少 5 种 IP 编码绕过方法。",
+      "expected_output": "具体的 IP 编码变体",
+      "expectations": [
+        "2130706433|十进制|127.0.0.1的整数",
+        "0x7f000001|十六进制|hex编码",
+        "0177.0.0.1|八进制|octal",
+        "[::1]|IPv6|::ffff:127.0.0.1",
+        "127.1|127.0.1|短格式|省略0"
+      ],
+      "required_terms": [
+        "0177.0.0.1",
+        "[::1]",
+        "127.1"
+      ]
+    }
+  ]
+}

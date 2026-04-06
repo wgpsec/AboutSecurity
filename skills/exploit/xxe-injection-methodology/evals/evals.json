@@ -1,0 +1,41 @@
+{
+  "skill_name": "xxe-injection-methodology",
+  "evals": [
+    {
+      "id": 1,
+      "name": "xxe-blind-external-dtd",
+      "prompt": "你发现 XXE 漏洞但无直接输出（盲 XXE）。请描述使用参数实体 + 外部 DTD 进行数据外带的完整方法。",
+      "expected_output": "参数实体(%xxe;) + 外部 DTD 外带数据的具体实现",
+      "expectations": [
+        "参数实体|%xxe|%file|百分号实体",
+        "外部DTD|http://attacker/evil.dtd|远程DTD",
+        "<!ENTITY % eval|嵌套实体定义|eval触发exfil",
+        "http://attacker/?data=%file|外带数据|HTTP请求",
+        "服务器|接收数据|监听|需要控制外部服务器"
+      ],
+      "required_terms": [
+        "<!ENTITY % eval",
+        "%xxe",
+        "%file"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "xxe-json-to-xml-switch",
+      "prompt": "一个 API 端点只接受 JSON（Content-Type: application/json）。你想测试 XXE。请描述你的方法。",
+      "expected_output": "将 Content-Type 改为 application/xml 并发送 XML body",
+      "expectations": [
+        "Content-Type|application/xml|text/xml|修改类型",
+        "JSON转XML|构造XML body|替换格式",
+        "有些后端|同时支持JSON和XML|解析器自动选择",
+        "<!DOCTYPE|<!ENTITY|SYSTEM|XXE payload",
+        "即使文档说JSON|也尝试XML|隐式支持"
+      ],
+      "required_terms": [
+        "application/xml",
+        "text/xml",
+        "<!DOCTYPE"
+      ]
+    }
+  ]
+}
