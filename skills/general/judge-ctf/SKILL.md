@@ -1,81 +1,81 @@
 ---
 name: judge-ctf
-description: "CTF 夺旗决策 Agent 评估清单。用于评估 CTF 挑战是否完成（flag 是否找到），分析未找到 flag 的原因，并给出精准的 flag 获取指导。当 CTF 攻击陷入僵局、需要判断是否遗漏攻击路径、或已获取疑似 flag 需要验证格式时使用"
+description: "CTF flag-capture evaluation checklist for the decision Agent. Evaluates whether a CTF challenge is complete (flag found), analyzes reasons for failure, and provides precise guidance for flag acquisition."
 metadata:
-  tags: "judge,评估,ctf,flag,决策"
+  tags: "judge,evaluation,ctf,flag,decision"
   category: "general"
 ---
 
-# CTF 夺旗评估清单
+# CTF Flag Capture Evaluation Checklist
 
-## 唯一成功标准
+## Sole Success Criterion
 
-**flag{...} 是否已找到？**
-- 在 agent 输出日志中搜索 `flag{`
-- 在 evidence 文件中搜索 `flag{`
-- 在 vulns.json 的 detail 字段中搜索
+**Has flag{...} been found?**
+- Search agent output logs for `flag{`
+- Search evidence files for `flag{`
+- Search vulns.json detail fields
 
-找到 → complete: true，无需进一步评估。
+Found → complete: true, no further evaluation needed.
 
-## 未找到 Flag 时的诊断
+## Diagnosis When Flag NOT Found
 
-### Step 1: 漏洞是否已发现？
-
-```
-if 漏洞数 == 0:
-    → 侦察不足，建议扩大攻击面
-    feedback: "未发现任何漏洞，建议：
-      1. 仔细检查所有 HTTP 响应中的隐藏线索
-      2. 尝试目录爆破发现隐藏端点
-      3. 检查页面源码中的注释和隐藏参数
-      4. 尝试常见默认凭据登录"
-```
-
-### Step 2: 漏洞是否已利用？
+### Step 1: Was any vulnerability discovered?
 
 ```
-if 有漏洞但未利用:
-    → 漏洞利用不足
-    feedback: "发现了 {vuln_type}，但未利用获取 flag。建议：
-      - SQLi: 用 UNION SELECT 读取数据库表，找 flag 表
-      - LFI: 读取 /flag.txt, /home/*/flag, /var/www/flag
+if vuln_count == 0:
+    → Insufficient reconnaissance, expand attack surface
+    feedback: "No vulnerabilities discovered. Suggestions:
+      1. Carefully inspect all HTTP responses for hidden clues
+      2. Try directory bruteforce to discover hidden endpoints
+      3. Check page source for comments and hidden parameters
+      4. Try common default credentials for login"
+```
+
+### Step 2: Was the vulnerability exploited?
+
+```
+if vulns_found but not_exploited:
+    → Insufficient exploitation
+    feedback: "Discovered {vuln_type} but did not exploit to get flag. Suggestions:
+      - SQLi: Use UNION SELECT to read database tables, find flag table
+      - LFI: Read /flag.txt, /home/*/flag, /var/www/flag
       - RCE: find / -name 'flag*' 2>/dev/null
-      - IDOR: 遍历所有 id 值，检查每个响应中的 flag"
+      - IDOR: Enumerate all id values, check each response for flag"
 ```
 
-### Step 3: 利用了但没拿到 flag？
+### Step 3: Exploited but no flag?
 
 ```
-if 漏洞已利用但无 flag:
-    → flag 位置可能不在预期位置
-    feedback: "漏洞已利用但未找到 flag，建议：
-      1. 数据库搜索: SELECT * FROM flags / 搜索所有表
-      2. 文件搜索: find / grep -r 'flag{' / env | grep FLAG
-      3. 检查响应头: curl -v 看 HTTP headers
-      4. 检查隐藏页面: 用已获得的权限访问 /admin, /dashboard
-      5. 检查源码: 反编译/查看应用源码中的硬编码 flag"
+if vuln_exploited but no_flag:
+    → Flag may not be in expected location
+    feedback: "Vulnerability exploited but flag not found. Suggestions:
+      1. Database search: SELECT * FROM flags / search all tables
+      2. File search: find / grep -r 'flag{' / env | grep FLAG
+      3. Check response headers: curl -v for HTTP headers
+      4. Check hidden pages: use gained privileges to access /admin, /dashboard
+      5. Check source code: decompile/view application source for hardcoded flag"
 ```
 
-## CTF 常见出题模式
+## Common CTF Challenge Patterns
 
-Judge 应了解这些模式来给出精准反馈：
+Judge should know these patterns to provide precise feedback:
 
-| 漏洞类型 | Flag 通常在哪 |
-|---------|-------------|
-| SQL 注入 | 数据库某个表的某个字段 |
-| LFI/路径遍历 | /flag.txt 或 /etc/flag 或应用目录下 |
-| RCE/命令注入 | 文件系统中，需要 find/grep |
-| IDOR | 某个特定 id 的资源内容里 |
-| 反序列化 | 获取 RCE 后在文件系统中 |
-| SSRF | 内网服务的响应中 |
-| XSS | 通常不直接给 flag，除非有 admin bot |
-| 信息泄露 | 源码注释、备份文件、配置文件中 |
+| Vuln Type | Flag Typically Located |
+|-----------|----------------------|
+| SQL Injection | A field in some database table |
+| LFI/Path Traversal | /flag.txt or /etc/flag or in application directory |
+| RCE/Command Injection | Filesystem, requires find/grep |
+| IDOR | Content of a specific resource by id |
+| Deserialization | Filesystem after gaining RCE |
+| SSRF | Response from internal service |
+| XSS | Usually no direct flag, unless admin bot exists |
+| Info Disclosure | Source comments, backup files, config files |
 
-## 反馈精准度要求
+## Feedback Precision Requirements
 
-**禁止**泛泛的反馈如"继续测试"、"更深入地挖掘"。
+**FORBIDDEN**: vague feedback like "keep testing" or "dig deeper".
 
-**必须**给出具体的：
-1. 利用哪个已发现的漏洞
-2. 具体的利用步骤（payload 级别）
-3. flag 最可能在哪里
+**MUST** provide specific:
+1. Which discovered vulnerability to exploit
+2. Concrete exploitation steps (payload-level)
+3. Most likely flag location
