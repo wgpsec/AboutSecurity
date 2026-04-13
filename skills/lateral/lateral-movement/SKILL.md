@@ -3,7 +3,7 @@ name: lateral-movement
 description: "横向移动技术。当已获取凭据（密码/哈希/密钥/票据）需要从当前主机移动到其他主机时使用。覆盖 SSH、RDP、WMI、PSExec、PTH、PTT、DCOM 等技术。根据目标操作系统和可用凭据类型选择最佳移动方式"
 metadata:
   tags: "lateral,横向移动,ssh,rdp,wmi,psexec,pth,pass the hash,dcom,winrm,pivot"
-  category: "postexploit"
+  category: "lateral"
 ---
 
 # 横向移动方法论
