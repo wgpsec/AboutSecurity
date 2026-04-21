@@ -167,33 +167,39 @@ def _rename_file_stem(filename: str) -> str | None:
 
     Rules applied in order:
     1. If filename contains Chinese chars -> return None
-    2. Drop ``Fuzz_`` prefix
-    3. ``Top<N>_`` -> ``top<N>-``
-    4. Lowercase
-    5. Underscore -> hyphen
-    6. Collapse multiple hyphens
+    2. Split into stem + extension
+    3. Drop ``Fuzz_`` prefix
+    4. ``Top<N>_`` -> ``top<N>-``
+    5. Lowercase
+    6. Underscore -> hyphen
+    7. Collapse multiple hyphens
+    8. Strip leading/trailing hyphens from stem
+    9. Rejoin stem + lowercased extension
     """
     if _has_chinese(filename):
         return None
 
-    name = filename
+    stem, ext = os.path.splitext(filename)
 
     # Drop Fuzz_ prefix
-    name = re.sub(r"^Fuzz_", "", name)
+    stem = re.sub(r"^Fuzz_", "", stem)
 
     # Top<N>_ -> top<N>-
-    name = re.sub(r"^Top(\d+)_", r"top\1-", name, flags=re.IGNORECASE)
+    stem = re.sub(r"^Top(\d+)_", r"top\1-", stem, flags=re.IGNORECASE)
 
     # Lowercase
-    name = name.lower()
+    stem = stem.lower()
 
     # Underscore to hyphen
-    name = name.replace("_", "-")
+    stem = stem.replace("_", "-")
 
     # Collapse multiple hyphens
-    name = re.sub(r"-{2,}", "-", name)
+    stem = re.sub(r"-{2,}", "-", stem)
 
-    return name
+    # Strip leading/trailing hyphens
+    stem = stem.strip("-")
+
+    return stem + ext.lower()
 
 
 def _count_lines(path: Path) -> int:
@@ -303,46 +309,8 @@ def cmd_rename_files(args: argparse.Namespace) -> None:
                     # No change needed (already lowercase/clean)
                     continue
 
-                # Handle case-only renames on case-insensitive FS
                 src = Path(dirpath) / fname
                 dst = Path(dirpath) / new_name
-
-                if src == dst:
-                    continue
-
-                # Detect case-only rename via inode comparison
-                try:
-                    same_file = dst.exists() and os.path.samefile(str(src), str(dst))
-                except OSError:
-                    same_file = False
-
-                if same_file and new_name != fname:
-                    # Case-only rename — two-step
-                    if dry_run:
-                        print(f"  [DRY-RUN] {src.relative_to(REPO_ROOT)} -> {new_name} (case-only)")
-                        ok += 1
-                        continue
-
-                    tmp = src.with_name(fname + "_tmp_migrate")
-                    r1 = subprocess.run(
-                        ["git", "mv", str(src), str(tmp)],
-                        cwd=str(REPO_ROOT), capture_output=True, text=True,
-                    )
-                    if r1.returncode != 0:
-                        print(f"  [ERROR] step 1: {r1.stderr.strip()}")
-                        skip += 1
-                        continue
-                    r2 = subprocess.run(
-                        ["git", "mv", str(tmp), str(dst)],
-                        cwd=str(REPO_ROOT), capture_output=True, text=True,
-                    )
-                    if r2.returncode != 0:
-                        print(f"  [ERROR] step 2: {r2.stderr.strip()}")
-                        skip += 1
-                        continue
-                    print(f"  [OK] {src.relative_to(REPO_ROOT)} -> {new_name} (case-only)")
-                    ok += 1
-                    continue
 
                 if _git_mv(src, dst, dry_run=dry_run):
                     ok += 1
