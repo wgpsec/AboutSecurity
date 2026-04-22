@@ -16,11 +16,11 @@
   - `web-method/` — Web 通用方法论（注入、XSS、SSRF、SSTI、文件上传、反序列化、WAF绕过…）
   - `advanced/` — 高级利用（HTTP走私、竞态条件、供应链攻击、OT/ICS、加密攻击）
   - `auth/` — 认证授权（JWT、OAuth/SSO、IDOR、CORS、CSRF、Cookie分析）
-- `product-tactics/` — 特定产品后渗透技战术（ArgoCD、Harbor、数据库、中间件、Portainer、RabbitMQ）
+- `postexploit/` — 后渗透（Linux/Windows提权、持久化、凭据窃取，以及 ArgoCD、Harbor、数据库、中间件、Portainer、RabbitMQ 等产品后渗透技战术）
 - `general/` — 综合（报告生成、供应链审计、移动后端API）
 - `lateral/` — 横向移动（AD域攻击、NTLM中继、数据库横向、Kerberoasting、ACL滥用）
 - `malware/` — 恶意软件（样本分析方法论、C2 Beacon配置提取、沙箱逃逸实现）
-- `postexploit/` — 后渗透（Linux/Windows提权、持久化、凭据窃取）
+
 - `recon/` — 侦察（子域名枚举、被动信息收集、JS API提取）
 - `threat-intel/` — 威胁情报（IOC对抗、APT模拟、威胁猎杀规避）
 - `ai-security/` — AI 安全（Prompt 注入、模型越狱、Prompt 泄露、Agent 攻击链）
@@ -54,7 +54,7 @@
 
 > **Tools/ vs skills/tool/ 的区别**：`Tools/` 下的 YAML 是面向**程序化工具编排框架**的结构化接口定义（参数类型、命令模板、输出解析器），适合自动化引擎调用；`skills/tool/` 下的 SKILL.md 是面向 **LLM Agent** 的自然语言方法论（何时用、怎么选参数、结果怎么判断）。如果你只使用 Claude Code 等 LLM Agent，关注 `skills/tool/` 即可。
 
-> **product-tactics/ vs Vuln/ 的区别**：两者针对同一产品但定位不同。`product-tactics/` 下的 Skill 是**后渗透层**——拿到权限后的提权、持久化、凭据提取、横向移动、数据窃取；`Vuln/` 下的条目是**漏洞数据层**——每条漏洞的影响版本、PoC 代码、具体利用步骤。简单来说：**Skill 告诉你"进去之后怎么搞"，Vuln 告诉你"怎么进去"**。
+> **postexploit/ vs Vuln/ 的区别**：`postexploit/` 下的 Skill 是**后渗透层**——拿到权限后的提权、持久化、凭据提取、横向移动，以及特定产品的深入利用技战术；`Vuln/` 下的条目是**漏洞数据层**——每条漏洞的影响版本、PoC 代码、具体利用步骤。简单来说：**Skill 告诉你"进去之后怎么搞"，Vuln 告诉你"怎么进去"**。
 
 ## 快速开始
 
