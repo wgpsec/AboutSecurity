@@ -42,7 +42,7 @@
 - `ai/` — AI 相关（ComfyUI、Dify、LangFlow、AnythingLLM 等）
 - `cloud/` — 云平台（AWS API Gateway 等）
 - `middleware/` — 中间件（ActiveMQ、Nacos、Grafana、Jenkins、RocketMQ 等 394 条）
-- `network/` — 网络设备（安恒、锐捷等）
+- `network/` — 网络设备（路由器、交换机等）
 - `web/` — Web 应用（1Panel、WordPress、OFBiz 等）
 
 **Tools/** — 外部工具声明式配置（程序化编排框架使用）
