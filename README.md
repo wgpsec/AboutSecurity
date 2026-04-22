@@ -16,7 +16,11 @@ Penetration testing knowledge base with security methodologies in AI Agent-execu
   - `web-method/` — Web methodology (injection, XSS, SSRF, SSTI, file upload, deserialization, WAF bypass...)
   - `advanced/` — Advanced exploitation (HTTP smuggling, race conditions, supply chain attacks, OT/ICS, crypto attacks)
   - `auth/` — Authentication & authorization (JWT, OAuth/SSO, IDOR, CORS, CSRF, cookie analysis)
-- `postexploit/` — Post-exploitation (Linux/Windows privilege escalation, persistence, credential theft, product-specific tactics for ArgoCD, Harbor, databases, middleware, Portainer, RabbitMQ)
+- `postexploit/` — Post-exploitation
+  - `post-exploit-linux/` / `post-exploit-windows/` — OS-level privilege escalation, credential theft
+  - `persist-maintain/` — Persistence techniques (cron, services, webshell)
+  - `tool-delivery/` — Tool delivery to compromised hosts
+  - `product/` — Product-specific post-exploitation tactics (ArgoCD, Harbor, databases, middleware, Portainer, RabbitMQ)
 - `general/` — General (report generation, supply chain auditing, mobile backend API)
 - `lateral/` — Lateral movement (AD domain attacks, NTLM relay, database pivoting, Kerberoasting, ACL abuse)
 - `malware/` — Malware (sample analysis methodology, C2 beacon config extraction, sandbox evasion)

@@ -16,7 +16,11 @@
   - `web-method/` — Web 通用方法论（注入、XSS、SSRF、SSTI、文件上传、反序列化、WAF绕过…）
   - `advanced/` — 高级利用（HTTP走私、竞态条件、供应链攻击、OT/ICS、加密攻击）
   - `auth/` — 认证授权（JWT、OAuth/SSO、IDOR、CORS、CSRF、Cookie分析）
-- `postexploit/` — 后渗透（Linux/Windows提权、持久化、凭据窃取，以及 ArgoCD、Harbor、数据库、中间件、Portainer、RabbitMQ 等产品后渗透技战术）
+- `postexploit/` — 后渗透
+  - `post-exploit-linux/` / `post-exploit-windows/` — OS 级提权、凭据窃取
+  - `persist-maintain/` — 持久化技术（cron、服务、webshell）
+  - `tool-delivery/` — 工具投递到已控主机
+  - `product/` — 特定产品后渗透技战术（ArgoCD、Harbor、数据库、中间件、Portainer、RabbitMQ）
 - `general/` — 综合（报告生成、供应链审计、移动后端API）
 - `lateral/` — 横向移动（AD域攻击、NTLM中继、数据库横向、Kerberoasting、ACL滥用）
 - `malware/` — 恶意软件（样本分析方法论、C2 Beacon配置提取、沙箱逃逸实现）
