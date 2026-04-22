@@ -8,27 +8,26 @@
 
 **Skills/** — 184 个技能方法论，覆盖侦察到后渗透全链路
 
+- `ai-security/` — AI 安全（Prompt 注入、模型越狱、Prompt 泄露、Agent 攻击链）
 - `cloud/` — 云环境（Docker逃逸、K8s攻击链、AWS IAM、阿里云、腾讯云、Serverless）
+- `code-audit/` — 代码审计（PHP 8-Skill 体系、Java 8-Skill 体系，覆盖注入/文件/序列化/认证/框架/利用链）
 - `ctf/` — CTF竞赛（Web解题、逆向、PWN、密码学、取证、AI/ML）
 - `dfir/` — 取证对抗（内存取证与反取证、磁盘取证与反取证、日志逃逸）
 - `evasion/` — 免杀对抗（C2框架、Shellcode生成、安全研究）
 - `exploit/` — 漏洞利用（按子分类组织）
-  - `web-method/` — Web 通用方法论（注入、XSS、SSRF、SSTI、文件上传、反序列化、WAF绕过…）
   - `advanced/` — 高级利用（HTTP走私、竞态条件、供应链攻击、OT/ICS、加密攻击）
   - `auth/` — 认证授权（JWT、OAuth/SSO、IDOR、CORS、CSRF、Cookie分析）
+  - `web-method/` — Web 通用方法论（注入、XSS、SSRF、SSTI、文件上传、反序列化、WAF绕过…）
+- `general/` — 综合（报告生成、供应链审计、移动后端API）
+- `lateral/` — 横向移动（AD域攻击、NTLM中继、数据库横向、Kerberoasting、ACL滥用）
+- `malware/` — 恶意软件（样本分析方法论、C2 Beacon配置提取、沙箱逃逸实现）
 - `postexploit/` — 后渗透
   - `post-exploit-linux/` / `post-exploit-windows/` — OS 级提权、凭据窃取
   - `persist-maintain/` — 持久化技术（cron、服务、webshell）
   - `tool-delivery/` — 工具投递到已控主机
   - `product/` — 特定产品后渗透技战术（ArgoCD、Harbor、数据库、中间件、Portainer、RabbitMQ）
-- `general/` — 综合（报告生成、供应链审计、移动后端API）
-- `lateral/` — 横向移动（AD域攻击、NTLM中继、数据库横向、Kerberoasting、ACL滥用）
-- `malware/` — 恶意软件（样本分析方法论、C2 Beacon配置提取、沙箱逃逸实现）
-
 - `recon/` — 侦察（子域名枚举、被动信息收集、JS API提取）
 - `threat-intel/` — 威胁情报（IOC对抗、APT模拟、威胁猎杀规避）
-- `ai-security/` — AI 安全（Prompt 注入、模型越狱、Prompt 泄露、Agent 攻击链）
-- `code-audit/` — 代码审计（PHP 8-Skill 体系、Java 8-Skill 体系，覆盖注入/文件/序列化/认证/框架/利用链）
 - `tool/` — 工具使用（fscan、nuclei、sqlmap、msfconsole、ffuf、hashcat）
 
 **Dic/** — 字典库（全小写连字符命名，每目录带 `_meta.yaml` 元数据）

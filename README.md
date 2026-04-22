@@ -8,27 +8,26 @@ Penetration testing knowledge base with security methodologies in AI Agent-execu
 
 **Skills/** — 180+ skill methodologies covering the full chain from recon to post-exploitation
 
+- `ai-security/` — AI security (prompt injection, model jailbreaking, prompt leaking, agent attack chains)
 - `cloud/` — Cloud environments (Docker escape, K8s attack chains, AWS IAM, Alibaba Cloud, Tencent Cloud, Serverless)
+- `code-audit/` — Code auditing (PHP 8-skill system, Java 8-skill system covering injection/file/serialization/auth/framework/exploit chains)
 - `ctf/` — CTF competitions (Web challenges, reversing, PWN, cryptography, forensics, AI/ML)
 - `dfir/` — Digital forensics & incident response (memory forensics & anti-forensics, disk forensics, log evasion)
 - `evasion/` — Evasion techniques (C2 frameworks, shellcode generation, security research)
 - `exploit/` — Exploitation (organized by subcategory)
-  - `web-method/` — Web methodology (injection, XSS, SSRF, SSTI, file upload, deserialization, WAF bypass...)
   - `advanced/` — Advanced exploitation (HTTP smuggling, race conditions, supply chain attacks, OT/ICS, crypto attacks)
   - `auth/` — Authentication & authorization (JWT, OAuth/SSO, IDOR, CORS, CSRF, cookie analysis)
+  - `web-method/` — Web methodology (injection, XSS, SSRF, SSTI, file upload, deserialization, WAF bypass...)
+- `general/` — General (report generation, supply chain auditing, mobile backend API)
+- `lateral/` — Lateral movement (AD domain attacks, NTLM relay, database pivoting, Kerberoasting, ACL abuse)
+- `malware/` — Malware (sample analysis methodology, C2 beacon config extraction, sandbox evasion)
 - `postexploit/` — Post-exploitation
   - `post-exploit-linux/` / `post-exploit-windows/` — OS-level privilege escalation, credential theft
   - `persist-maintain/` — Persistence techniques (cron, services, webshell)
   - `tool-delivery/` — Tool delivery to compromised hosts
   - `product/` — Product-specific post-exploitation tactics (ArgoCD, Harbor, databases, middleware, Portainer, RabbitMQ)
-- `general/` — General (report generation, supply chain auditing, mobile backend API)
-- `lateral/` — Lateral movement (AD domain attacks, NTLM relay, database pivoting, Kerberoasting, ACL abuse)
-- `malware/` — Malware (sample analysis methodology, C2 beacon config extraction, sandbox evasion)
-
 - `recon/` — Reconnaissance (subdomain enumeration, passive information gathering, JS API extraction)
 - `threat-intel/` — Threat intelligence (IOC evasion, APT simulation, threat hunting evasion)
-- `ai-security/` — AI security (prompt injection, model jailbreaking, prompt leaking, agent attack chains)
-- `code-audit/` — Code auditing (PHP 8-skill system, Java 8-skill system covering injection/file/serialization/auth/framework/exploit chains)
 - `tool/` — Tool usage (fscan, nuclei, sqlmap, msfconsole, ffuf, hashcat)
 
 **Dic/** — Dictionary library (lowercase hyphen-separated naming, each directory has `_meta.yaml` metadata)
