@@ -13,7 +13,7 @@ files:
   description: 中国常见手机号码格式
   usage: 以手机号为用户名的系统登录爆破
   tags: phone,手机号,中国手机,mobile
-- name: user-10000.txt
+- name: username-top10000.txt
   lines: 10415
   description: 约10000个通用用户名集合
   usage: 大规模用户名枚举与爆破

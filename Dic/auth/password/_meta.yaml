@@ -8,27 +8,27 @@ files:
   description: 以admin为前缀的管理员常用密码组合
   usage: 后台管理员账户密码爆破
   tags: admin,管理员,admin-password,后台密码
-- name: pass00-10.txt
+- name: password-top10.txt
   lines: 10
   description: 最常见的10个弱口令
   usage: 快速验证默认密码、登录初筛
   tags: top10,common,weak,极简弱口令
-- name: pass01-100.txt
+- name: password-top100.txt
   lines: 173
   description: 最常见的约100个弱口令
   usage: 登录爆破初筛、快速验证默认口令
   tags: top100,common,weak,弱口令
-- name: pass02-1000.txt
+- name: password-top1000.txt
   lines: 1888
   description: 约1000个常见弱口令集合
   usage: 中等规模登录爆破
   tags: top1000,medium,弱口令,常用密码
-- name: pass03-20000.txt
+- name: password-top20000.txt
   lines: 19315
   description: 约20000个常用密码集合
   usage: 大规模登录爆破、深度密码猜测
   tags: top20000,large,弱口令,密码字典
-- name: pass04-100000.txt
+- name: password-top100000.txt
   lines: 94123
   description: 约100000个密码的超大字典
   usage: 全面密码爆破、离线哈希碰撞
