@@ -8,7 +8,7 @@
 
 ## 核心模块
 
-**Skills/** — 180+ 技能方法论，覆盖侦察到后渗透全链路
+**Skills/** — 200+ 技能方法论，覆盖侦察到后渗透全链路
 
 - `ai-security/` — AI 安全（Prompt 注入、模型越狱、Prompt 泄露、Agent 攻击链）
 - `cloud/` — 云环境（Docker逃逸、K8s攻击链、AWS IAM、阿里云、腾讯云、Serverless）
@@ -56,13 +56,6 @@
 - `network/` — 网络设备（路由器、交换机等）
 - `web/` — Web 应用（1Panel、WordPress、OFBiz 等）
 
-**Tools/** — 外部工具声明式配置（程序化编排框架使用）
-
-- `scan/`、`fuzz/`、`osint/`、`poc/`、`brute/`、`postexploit/`
-- 详见 [Tools/README.md](./Tools/README.md)
-
-> **Tools/ vs skills/tool/ 的区别**：`Tools/` 下的 YAML 是面向**程序化工具编排框架**的结构化接口定义（参数类型、命令模板、输出解析器），适合自动化引擎调用；`skills/tool/` 下的 SKILL.md 是面向 **LLM Agent** 的自然语言方法论（何时用、怎么选参数、结果怎么判断）。如果你只使用 Claude Code 等 LLM Agent，关注 `skills/tool/` 即可。
-
 > **postexploit/ vs Vuln/ 的区别**：`postexploit/` 下的 Skill 是**后渗透层**——拿到权限后的提权、持久化、凭据提取、横向移动，以及特定产品的深入利用技战术；`Vuln/` 下的条目是**漏洞数据层**——每条漏洞的影响版本、PoC 代码、具体利用步骤。简单来说：**Skill 告诉你"进去之后怎么搞"，Vuln 告诉你"怎么进去"**。
 
 ## 快速开始
@@ -76,7 +69,7 @@ git clone https://github.com/your-org/AboutSecurity.git
 ### 2. 同步 Skills 到你的项目
 
 ```bash
-# 将 184 安全技能同步到你的工作项目中
+# 将安全技能同步到你的工作项目中
 cd AboutSecurity
 ./scripts/sync-claude-skills.sh --target /path/to/your-project
 
@@ -121,7 +114,7 @@ make run   # 一条命令：克隆数据 + 构建索引 + 启动服务
 
 ```bash
 # Claude Code
-claude mcp add aboutsecurity --transport http http://localhost:8088/mcp
+claude mcp add aboutsecurity --transport http http://localhost:1337/mcp
 ```
 
 之后即可用自然语言查询：「搜索 SQL 注入相关资源」「列出所有 XSS payload」「查找 Apache 高危漏洞」等。详见 [context1337 README](https://github.com/wgpsec/context1337)。

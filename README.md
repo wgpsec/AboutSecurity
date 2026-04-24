@@ -8,7 +8,7 @@ Penetration testing knowledge base with security methodologies in AI Agent-execu
 
 ## Core Modules
 
-**Skills/** — 180+ skill methodologies covering the full chain from recon to post-exploitation
+**Skills/** — 200+ skill methodologies covering the full chain from recon to post-exploitation
 
 - `ai-security/` — AI security (prompt injection, model jailbreaking, prompt leaking, agent attack chains)
 - `cloud/` — Cloud environments (Docker escape, K8s attack chains, AWS IAM, Alibaba Cloud, Tencent Cloud, Serverless)
@@ -55,13 +55,6 @@ Penetration testing knowledge base with security methodologies in AI Agent-execu
 - `middleware/` — Middleware (ActiveMQ, Nacos, Grafana, Jenkins, RocketMQ, etc. — 394 entries)
 - `network/` — Network devices (routers, switches, etc.)
 - `web/` — Web applications (1Panel, WordPress, OFBiz, etc.)
-
-**Tools/** — Declarative tool configurations for programmatic orchestration frameworks
-
-- `scan/`, `fuzz/`, `osint/`, `poc/`, `brute/`, `postexploit/`
-- See [Tools/README.md](./Tools/README.md) for details
-
-> **Tools/ vs skills/tool/**: YAML files under `Tools/` are structured interface definitions for **programmatic tool orchestration frameworks** (parameter types, command templates, output parsers), suitable for automation engines. `SKILL.md` files under `skills/tool/` are natural language methodologies for **LLM Agents** (when to use, how to choose parameters, how to interpret results). If you only use LLM Agents like Claude Code, focus on `skills/tool/`.
 
 > **postexploit/ vs Vuln/**: Skills under `postexploit/` are the **post-exploitation layer** — what to do after gaining access (privilege escalation, persistence, credential extraction, lateral movement, product-specific tactics). Entries under `Vuln/` are the **vulnerability data layer** — affected versions, PoC code, specific exploitation steps per CVE. In short: **Skills tell you "what to do after you're in", Vuln tells you "how to get in"**.
 
@@ -121,7 +114,7 @@ Then add the MCP service to your AI tool:
 
 ```bash
 # Claude Code
-claude mcp add aboutsecurity --transport http http://localhost:8088/mcp
+claude mcp add aboutsecurity --transport http http://localhost:1337/mcp
 ```
 
 After that, query with natural language: "Search for SQL injection resources", "List all XSS payloads", "Find critical Apache vulnerabilities", etc. See [context1337 README](https://github.com/wgpsec/context1337) for details.
