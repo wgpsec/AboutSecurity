@@ -1,6 +1,6 @@
 # AboutSecurity 资源贡献规范
 
-本文档定义了 `skills/` 和 `Vuln/` 目录下文件的编写规范，供社区贡献者和 AI 参考。
+本文档定义了 `skills/`、`Vuln/`、`Dic/`、`Payload/` 目录下文件的编写规范，供社区贡献者和 AI 参考。
 
 ---
 
@@ -31,15 +31,19 @@ AboutSecurity/
 │   ├── general/              # 综合类
 │   ├── ai-security/          # AI 安全（模型攻击）
 │   ├── mobile/               # 移动应用渗透
-│   │   ├── android-app-pentesting/
-│   │   ├── ios-pentesting/
-│   │   └── ios-exploiting/
 │   ├── hardware/             # 硬件/物理安全渗透
-│   │   └── firmware-analysis/
 │   └── code-audit/           # 源码审计类（白盒）
-│       ├── php/              # PHP 代码审计
-│       ├── java/             # Java 代码审计（预留）
-│       └── dotnet/           # .NET 代码审计（预留）
+├── Dic/                      # 字典库（每目录带 _meta.yaml）
+│   ├── auth/                 # 用户名/密码
+│   ├── network/              # DNS 服务器、排除 IP 段
+│   ├── port/                 # 按服务分类的爆破字典
+│   ├── regular/              # 通用字典（数字、字母等）
+│   └── web/                  # Web 目录、API 参数、中间件等
+├── Payload/                  # 攻击载荷（每目录带 _meta.yaml）
+│   ├── sqli/                 # SQL 注入
+│   ├── xss/                  # 跨站脚本
+│   ├── ssrf/                 # 服务端请求伪造
+│   └── ...                   # lfi, rce, xxe, upload 等
 ├── Vuln/                     # 结构化漏洞库（按产品分类）
 │   ├── ai/                   # AI 相关产品
 │   ├── cloud/                # 云平台
@@ -681,13 +685,111 @@ User-Agent: Nacos-Server
 
 ---
 
+# Dic/Payload 元数据编写规范
+
+## 1 概述
+
+`Dic/`（字典）和 `Payload/`（攻击载荷）目录下的每个子目录使用 `_meta.yaml` 提供结构化元数据，供 AI 搜索和索引使用。
+
+## 2 `_meta.yaml` 格式
+
+```yaml
+category: sqli                          # 顶层分类
+subcategory: blind                      # 子分类（可选）
+description: "基于时间的SQL盲注payload"   # 中文描述
+tags: "sqli,SQL injection,SQL注入,注入"  # 目录级 tags（⚠️ 仅放通用标签）
+
+files:
+  - name: payload-mysql.txt
+    lines: 109
+    description: "MySQL专用注入payload"
+    usage: "针对MySQL数据库进行SQL注入测试"
+    tags: "mysql,MySQL注入,sleep,benchmark"  # 文件级 tags（放特定标签）
+```
+
+## 3 Tags 继承机制与编写原则
+
+**关键机制**：索引系统会将**目录级 tags** 和**文件级 tags** 合并为每个文件的最终 tags：
+
+```
+文件最终 tags = 目录级 tags + 文件级 tags
+```
+
+这意味着目录级 tags 会被该目录下**所有文件**继承。如果目录级 tags 包含只适用于部分文件的标签，就会导致不相关文件被错误命中。
+
+### ⚠️ 核心原则：目录级 tags 只放通用标签
+
+**目录级 tags** 应该是该目录下**所有文件都适用**的通用标签。特定技术、工具、子类型的标签必须放在文件级。
+
+### 判断标准
+
+```
+这个 tag 是否适用于目录下的每一个文件？
+├─ 是 → ✅ 放在目录级
+└─ 否 → ❌ 必须放在文件级
+```
+
+### 示例
+
+**❌ 错误写法**（目录级放了特定数据库名）：
+```yaml
+# Payload/sqli/_meta.yaml
+tags: "sqli,SQL injection,SQL注入,MySQL,MSSQL,Oracle,LDAP,blind,盲注"
+#                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#                                  这些不是所有文件都适用的！
+files:
+  - name: payload-ldap.txt     # LDAP 文件会继承 MySQL,MSSQL,Oracle → 错误
+    tags: "ldap,LDAP注入"
+  - name: payload-mysql.txt    # MySQL 文件会继承 MSSQL,Oracle,LDAP → 错误
+    tags: "mysql,MySQL注入"
+```
+
+**✅ 正确写法**（目录级只放通用标签）：
+```yaml
+# Payload/sqli/_meta.yaml
+tags: "sqli,SQL injection,SQL注入,注入"    # 只放所有文件共有的
+files:
+  - name: payload-ldap.txt
+    tags: "ldap,LDAP injection,LDAP注入"   # LDAP 专属标签放文件级
+  - name: payload-mysql.txt
+    tags: "mysql,MySQL注入,sleep"           # MySQL 专属标签放文件级
+```
+
+### 常见错误模式
+
+| 错误 | 原因 | 修复 |
+|------|------|------|
+| 目录级放了多个产品/数据库名 | 子文件互相污染 | 产品名下沉到对应文件级 |
+| 目录级放了工具名（nc、netcat） | 不是每个文件都用该工具 | 工具名下沉到对应文件级 |
+| 目录级放了子类型（blind、存储型） | 不是每个文件都涉及该子类型 | 子类型下沉到对应文件级 |
+
+## 4 其他字段要求
+
+- `description` 和 `usage` 使用中文
+- `tags` 中英双语，逗号分隔
+- `lines` 填写文件实际行数
+- 新增文件时同步更新对应目录的 `_meta.yaml`
+
+## 5 检查清单
+
+提交 Dic/Payload 前，请确认：
+
+- [ ] 文件放在正确的分类目录下
+- [ ] 文件名全英文、小写、连字符分隔（如 `password-top100.txt`）
+- [ ] `_meta.yaml` 包含 category、description、tags、files 字段
+- [ ] **目录级 tags 只包含所有文件共有的通用标签**（不含特定技术/工具/子类型名称）
+- [ ] 特定技术标签放在对应文件的文件级 tags 中
+- [ ] `description` 和 `usage` 使用中文，`tags` 中英双语
+
+---
+
 # 提交流程
 
 1. Fork 本仓库
 2. 在对应目录下创建文件，遵循上述规范
-3. 按对应的检查清单（Skill 第 10 节 / Vuln 第 6 节）自查
+3. 按对应的检查清单（Skill 第 10 节 / Vuln 第 6 节 / Dic/Payload 第 5 节）自查
 4. 若新增分类，需同步更新 `CONTRIBUTING.md` 中的目录结构和 category 枚举
-5. 提交 PR，标题格式：`[Skill] 添加 xxx` 或 `[Vuln] 添加 xxx`
+5. 提交 PR，标题格式：`[Skill] 添加 xxx`、`[Vuln] 添加 xxx` 或 `[Dic/Payload] 添加 xxx`
 
 ---
 
